@@ -1,0 +1,108 @@
+.sheet {
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: 24px 24px 0 0;
+  box-shadow: var(--shadow-sheet);
+  overflow: hidden;
+  touch-action: none;
+  transition: height 380ms var(--ease-out);
+  animation: sheet-in 380ms var(--ease-out);
+}
+
+.sheet[data-state="full"] {
+  touch-action: auto;
+}
+
+.sheet[data-dragging] {
+  transition: none;
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.handle {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  height: 22px;
+  touch-action: none;
+}
+
+.grabber {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.grabber::after {
+  /* larger touch target without moving the visual */
+  content: "";
+  position: absolute;
+  width: 88px;
+  height: 44px;
+}
+
+.grabber span {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: #d6d4cd;
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  padding: 6px 20px 20px;
+  overflow: hidden;
+}
+
+.sheet[data-state="full"] .content {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+
+.swap {
+  animation: content-in var(--dur) var(--ease-out);
+}
+
+.hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 48px;
+  padding-bottom: env(safe-area-inset-bottom);
+  border: 0;
+  border-top: 1px solid var(--divider);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}

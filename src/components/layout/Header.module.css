@@ -1,0 +1,103 @@
+.header {
+  position: relative;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: var(--header-h);
+  padding: 0 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.logo {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+}
+
+.wordmark {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.sep {
+  width: 1px;
+  height: 20px;
+  margin: 0 8px;
+  background: var(--border);
+}
+
+.crumbs {
+  display: flex;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.crumbCurrent {
+  color: var(--text-2);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+}
+
+.iconBtn,
+.mobileTitle {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .header {
+    padding: 0 8px;
+  }
+  .brand,
+  .right {
+    display: none;
+  }
+  .iconBtn {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: var(--text);
+  }
+  .iconBtn:active {
+    background: var(--hover);
+  }
+  .mobileTitle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    min-width: 0;
+  }
+  .mobileTitle :global(.mono-label) {
+    font-size: 10px;
+  }
+  .mobileName {
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+}

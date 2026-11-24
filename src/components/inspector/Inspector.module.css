@@ -1,0 +1,29 @@
+.inspector {
+  position: absolute;
+  z-index: 30;
+  top: var(--stage-gap);
+  right: var(--stage-gap);
+  bottom: 92px; /* leaves the dock row free */
+  width: var(--inspector-w);
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.scroll {
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-inspector);
+  pointer-events: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.swap {
+  animation: content-in var(--dur) var(--ease-out);
+}

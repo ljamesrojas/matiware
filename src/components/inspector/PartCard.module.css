@@ -1,0 +1,279 @@
+.card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top row: code tag, category, close */
+.topRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -4px -8px 14px 0;
+}
+
+.code {
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--hover);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+}
+
+.category {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-left: auto;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-2);
+}
+
+.close:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.name {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.fullName {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  margin: 20px 0 4px;
+  border: 0;
+  background: var(--divider);
+}
+
+.section {
+  margin-top: 18px;
+}
+
+.heading {
+  margin: 0 0 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-body);
+}
+
+.hint {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  background: var(--soft);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+/* Connects-to chips */
+.chips {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  font-size: 13px;
+  color: var(--text);
+  transition:
+    background var(--dur) var(--ease-out),
+    border-color var(--dur) var(--ease-out);
+}
+
+.chip:hover {
+  background: var(--hover);
+  border-color: #d6d4cd;
+}
+
+/* Spec data-sheet rows */
+.specs {
+  margin: 0;
+}
+
+.specRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--divider);
+}
+
+.specRow:first-child {
+  border-top: 1px solid var(--divider);
+}
+
+.specRow dt {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.specRow dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+  text-align: right;
+}
+
+/* Signs of failure */
+.failure {
+  margin-top: 20px;
+  padding: 14px 16px;
+  border-radius: var(--r-sm);
+  background: var(--soft);
+}
+
+.failureHeading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--warn-ink);
+}
+
+.warnDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--warn-dot);
+}
+
+.failure p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-body);
+}
+
+/* Footer navigation */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid var(--divider);
+}
+
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.ghost:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.ghostNext {
+  margin-left: auto;
+}
+
+.ghostLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Overview category rows */
+.catRows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.catRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--divider);
+  font-size: 14px;
+}
+
+.catName {
+  flex: 1;
+}
+
+.catCount {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.more > .divider:first-child {
+  margin-bottom: 18px;
+}
+
+@media (max-width: 767px) {
+  .close,
+  .ghost {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .name {
+    font-size: 26px;
+  }
+}
