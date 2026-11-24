@@ -1,4 +1,5 @@
 import type { Device } from "../../types";
+import { desktopPcFlows } from "../flows/desktop-pc";
 
 /**
  * Desktop PC — learning content and 3D placement.
@@ -268,4 +269,5 @@ export const desktopPC: Device = {
       explodeOffset: [0, 0, 0],
     },
   ],
+  flows: desktopPcFlows,
 };

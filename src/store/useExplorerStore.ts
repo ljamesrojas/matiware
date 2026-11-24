@@ -1,9 +1,18 @@
 import { create } from "zustand";
-import type { ReadingLevel } from "../types";
-import { defaultDeviceId, getDevice } from "../data/devices";
+import type { FlowKind, ReadingLevel } from "../types";
+import { defaultDeviceId, getDevice, getFlow } from "../data/devices";
 
 export const DEFAULT_EXPLODE = 0.7;
 const EXPLODE_TWEEN_MS = 420;
+/** How long each flow step plays before moving on. */
+export const FLOW_STEP_MS = 5000;
+
+export interface FlowState {
+  active: boolean;
+  kind: FlowKind;
+  step: number;
+  playing: boolean;
+}
 
 export type SheetState = "peek" | "half" | "full";
 
@@ -30,6 +39,7 @@ interface ExplorerState {
   drawerOpen: boolean;
   sheetState: SheetState;
   insets: StageInsets;
+  flow: FlowState;
 
   select: (id: string | null) => void;
   hover: (id: string | null) => void;
@@ -45,6 +55,20 @@ interface ExplorerState {
   setDrawerOpen: (open: boolean) => void;
   setSheetState: (state: SheetState) => void;
   setInsets: (insets: StageInsets) => void;
+
+  /** Flow mode (Phase 2). */
+  startFlow: (kind?: FlowKind) => void;
+  stopFlow: () => void;
+  setFlowKind: (kind: FlowKind) => void;
+  setFlowStep: (step: number) => void;
+  stepFlow: (direction: 1 | -1) => void;
+  toggleFlowPlay: () => void;
+  /** Called by the flow timer when a step has finished playing. */
+  advanceFlow: () => void;
+}
+
+function flowStepCount(deviceId: string, kind: FlowKind): number {
+  return getFlow(getDevice(deviceId), kind)?.steps.length ?? 0;
 }
 
 let tweenFrame = 0;
@@ -70,11 +94,19 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
   drawerOpen: false,
   sheetState: "half",
   insets: { right: 0, bottom: 0 },
+  flow: { active: false, kind: "data", step: 0, playing: false },
 
   select: (id) => {
     // A new selection (or going back to the overview) opens the mobile sheet at half height.
-    const changed = id !== get().selectedPartId;
-    set({ selectedPartId: id, drawerOpen: false, ...(changed ? { sheetState: "half" as const } : {}) });
+    // Selecting a part leaves flow mode so the inspector can show the part card.
+    const s = get();
+    const changed = id !== s.selectedPartId;
+    set({
+      selectedPartId: id,
+      drawerOpen: false,
+      ...(changed ? { sheetState: "half" as const } : {}),
+      ...(id && s.flow.active ? { flow: { ...s.flow, active: false, playing: false } } : {}),
+    });
   },
 
   hover: (id) => {
@@ -116,6 +148,7 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
       isolate: false,
       sheetState: "half",
       resetId: s.resetId + 1,
+      flow: { ...s.flow, active: false, playing: false },
     }));
     get().animateExplode(DEFAULT_EXPLODE);
   },
@@ -138,6 +171,48 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
   setInsets: (insets) => {
     const cur = get().insets;
     if (Math.abs(cur.right - insets.right) > 0.5 || Math.abs(cur.bottom - insets.bottom) > 0.5) set({ insets });
+  },
+
+  startFlow: (kind) => {
+    const s = get();
+    const k = kind ?? s.flow.kind;
+    if (!flowStepCount(s.deviceId, k)) return;
+    set({
+      selectedPartId: null,
+      hoveredPartId: null,
+      drawerOpen: false,
+      sheetState: "half",
+      flow: { active: true, kind: k, step: 0, playing: true },
+    });
+  },
+
+  stopFlow: () => set((s) => ({ flow: { ...s.flow, active: false, playing: false }, sheetState: "half" })),
+
+  setFlowKind: (kind) => {
+    if (!flowStepCount(get().deviceId, kind)) return;
+    set((s) => ({ flow: { ...s.flow, kind, step: 0, playing: true } }));
+  },
+
+  setFlowStep: (step) => {
+    const count = flowStepCount(get().deviceId, get().flow.kind);
+    set((s) => ({ flow: { ...s.flow, step: Math.max(0, Math.min(count - 1, step)) } }));
+  },
+
+  stepFlow: (direction) => get().setFlowStep(get().flow.step + direction),
+
+  toggleFlowPlay: () => {
+    const { flow, deviceId } = get();
+    const last = flowStepCount(deviceId, flow.kind) - 1;
+    if (flow.playing) set({ flow: { ...flow, playing: false } });
+    // Pressing play on the last step starts again from the first.
+    else set({ flow: { ...flow, playing: true, step: flow.step >= last ? 0 : flow.step } });
+  },
+
+  advanceFlow: () => {
+    const { flow, deviceId } = get();
+    const last = flowStepCount(deviceId, flow.kind) - 1;
+    if (flow.step < last) set({ flow: { ...flow, step: flow.step + 1 } });
+    else set({ flow: { ...flow, playing: false } });
   },
 }));
 

@@ -1,4 +1,4 @@
-import type { Device, DeviceTile, Part } from "../../types";
+import type { Device, DeviceTile, Flow, FlowKind, Part } from "../../types";
 import { desktopPC } from "./desktop-pc";
 
 /** Devices that have a model and content. */
@@ -22,6 +22,10 @@ export function getDevice(id: string): Device {
 export function getPart(device: Device, id: string | null): Part | undefined {
   if (!id) return undefined;
   return device.parts.find((p) => p.id === id);
+}
+
+export function getFlow(device: Device, kind: FlowKind): Flow | undefined {
+  return device.flows?.find((f) => f.id === kind);
 }
 
 /** Mono subtitle, e.g. "TOWER · ATX · 10 PARTS". */

@@ -44,6 +44,60 @@ export interface Device {
   intro: string;
   description: string;
   parts: Part[]; // in list order
+  flows?: Flow[]; // step-by-step flow animations (Phase 2)
+}
+
+/* ---------- Flow mode (Phase 2) ---------- */
+
+export type FlowKind = "data" | "power";
+
+/**
+ * One point on a flow path.
+ * - `world`: a fixed scene position.
+ * - `part`: follows that part. Uses its current (exploded) center, or its assembled
+ *   center when `assembled` is true, plus an optional `offset`.
+ */
+export interface FlowPoint {
+  part?: string;
+  assembled?: boolean;
+  offset?: Vec3;
+  world?: Vec3;
+}
+
+export type FlowMarkerIcon = "monitor" | "plug";
+
+export interface FlowMarker {
+  label: string;
+  icon: FlowMarkerIcon;
+}
+
+export interface FlowStep {
+  id: string;
+  /** Short route, e.g. "Storage → RAM". */
+  route: string;
+  /** Card heading, e.g. "Load the app". */
+  title: string;
+  caption: LeveledText;
+  /** What travels along the path, or the approximate power. */
+  badge: string;
+  /** End-point parts, highlighted with the accent outline. */
+  focus: string[];
+  /** Parts the flow passes through, kept at full opacity. */
+  via?: string[];
+  path: FlowPoint[];
+  startMarker?: FlowMarker;
+  endMarker?: FlowMarker;
+}
+
+export interface Flow {
+  id: FlowKind;
+  name: string; // "Data flow"
+  shortName: string; // "Data"
+  question: string; // "What happens when you open an app?"
+  intro: string;
+  /** Label for the badge row in the card, e.g. "Carries" or "Approx. power". */
+  badgeLabel: string;
+  steps: FlowStep[];
 }
 
 export interface CategoryInfo {
