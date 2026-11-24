@@ -2,6 +2,8 @@ import type { CSSProperties } from "react";
 import {
   Expand,
   Focus,
+  GraduationCap,
+  Lightbulb,
   Minus,
   Pause,
   Play,
@@ -15,6 +17,7 @@ import {
 } from "lucide-react";
 import styles from "./Dock.module.css";
 import { FLOW_STEP_MS, useExplorerStore } from "../../store/useExplorerStore";
+import { assembleParts } from "../../store/quiz";
 import { useFlowStep, type ActiveFlowStep } from "../../hooks/useFlowStep";
 import { getDevice } from "../../data/devices";
 
@@ -64,6 +67,67 @@ function FlowToggle({ withText }: { withText: boolean }) {
       <Route {...ICON} />
       {withText && <span className={styles.text}>Flow</span>}
     </button>
+  );
+}
+
+/** Quiz toggle: opens the quiz chooser, or exits the quiz when active. */
+function QuizToggle({ withText }: { withText: boolean }) {
+  const active = useExplorerStore((s) => s.quiz.active);
+  const openQuiz = useExplorerStore((s) => s.openQuiz);
+  const exitQuiz = useExplorerStore((s) => s.exitQuiz);
+  const hasQuiz = !!getDevice(useExplorerStore((s) => s.deviceId)).quiz;
+  if (!hasQuiz) return null;
+
+  return (
+    <button
+      type="button"
+      className={withText ? styles.btn : styles.iconBtn}
+      aria-pressed={active}
+      aria-label={withText ? undefined : "Quiz"}
+      title={active ? "Exit quiz" : "Test yourself: identify parts or put the PC back together"}
+      onClick={() => (active ? exitQuiz() : openQuiz())}
+    >
+      <GraduationCap {...ICON} />
+      {withText && <span className={styles.text}>Quiz</span>}
+    </button>
+  );
+}
+
+/** Quiz progress (question or parts placed) and the hint button in Assemble mode. */
+function QuizProgress() {
+  const quiz = useExplorerStore((s) => s.quiz);
+  const showHint = useExplorerStore((s) => s.showHint);
+  const device = getDevice(useExplorerStore((s) => s.deviceId));
+  if (!quiz.mode) return null;
+
+  const identify = quiz.mode === "identify";
+  const total = identify ? quiz.questions.length : assembleParts(device).length;
+  const done = identify ? quiz.answers.filter((a) => a !== null).length : quiz.placed.length;
+  const current = identify ? Math.min(quiz.index + 1, total) : done;
+
+  return (
+    <>
+      <span className={styles.stepCount}>
+        <span className="mono-label">
+          <span className={styles.stepWord}>{identify ? "Question " : "Placed "}</span>
+          {current} / {total}
+        </span>
+        <span className={styles.progress} aria-hidden="true">
+          <span className={styles.progressStatic} style={{ transform: `scaleX(${total ? done / total : 0})` }} />
+        </span>
+      </span>
+      {!identify && !quiz.finished && (
+        <button
+          type="button"
+          className={styles.iconBtn}
+          aria-label="Show a hint"
+          aria-pressed={!!quiz.hintPartId}
+          onClick={showHint}
+        >
+          <Lightbulb {...ICON} />
+        </button>
+      )}
+    </>
   );
 }
 
@@ -130,11 +194,18 @@ export function Dock({ compact = false }: { compact?: boolean }) {
   const zoomBy = useExplorerStore((s) => s.zoomBy);
   const resetView = useExplorerStore((s) => s.resetView);
   const flowStep = useFlowStep();
+  const quizActive = useExplorerStore((s) => s.quiz.active);
 
   if (compact) {
     return (
       <div className={`${styles.dock} ${styles.compact}`} role="toolbar" aria-label="View controls">
-        {flowStep ? (
+        {quizActive ? (
+          <>
+            <QuizToggle withText={false} />
+            <span className={styles.sep} aria-hidden="true" />
+            <QuizProgress />
+          </>
+        ) : flowStep ? (
           <>
             <FlowToggle withText={false} />
             <span className={styles.sep} aria-hidden="true" />
@@ -171,7 +242,13 @@ export function Dock({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className={styles.dock} role="toolbar" aria-label="View controls">
-      {flowStep ? (
+      {quizActive ? (
+        <>
+          <QuizToggle withText />
+          <span className={styles.sep} aria-hidden="true" />
+          <QuizProgress />
+        </>
+      ) : flowStep ? (
         <>
           <FlowToggle withText />
           <span className={styles.sep} aria-hidden="true" />
@@ -206,6 +283,7 @@ export function Dock({ compact = false }: { compact?: boolean }) {
             <span className={styles.text}>Isolate</span>
           </button>
           <FlowToggle withText />
+          <QuizToggle withText />
         </>
       )}
 

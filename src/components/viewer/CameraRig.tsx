@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { partCenter } from "./sceneState";
 import { desktopPcModels } from "../../models/desktop-pc";
 import { getDevice, getPart } from "../../data/devices";
-import { useExplorerStore, type StageInsets } from "../../store/useExplorerStore";
+import { identifyTargetId, useExplorerStore, type StageInsets } from "../../store/useExplorerStore";
 import type { Vec3 } from "../../types";
 
 export const CAMERA_FOV = 32;
@@ -42,7 +42,8 @@ export function CameraRig() {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const size = useThree((s) => s.size);
 
-  const selectedId = useExplorerStore((s) => s.selectedPartId);
+  // The camera focuses on the selected part, or on the part asked about in the Identify quiz.
+  const selectedId = useExplorerStore((s) => s.selectedPartId ?? identifyTargetId(s.quiz));
   const explode = useExplorerStore((s) => s.explode);
   const insets = useExplorerStore((s) => s.insets);
   const zoom = useExplorerStore((s) => s.zoom);

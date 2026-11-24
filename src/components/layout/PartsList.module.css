@@ -66,3 +66,21 @@
     min-height: 44px;
   }
 }
+
+/* Quiz states */
+.row[aria-disabled="true"] {
+  cursor: default;
+}
+
+.list:has(.row[aria-disabled="true"]:not([data-placed])) .row {
+  opacity: 0.55;
+}
+
+.row[data-placed] {
+  color: var(--text-2);
+}
+
+.check {
+  flex: none;
+  color: var(--accent);
+}

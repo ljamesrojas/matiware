@@ -7,16 +7,29 @@ import { CameraRig, CAMERA_FOV } from "./CameraRig";
 import { sceneState } from "./sceneState";
 import { FlowLayer } from "./FlowLayer";
 import { DesktopPC } from "../../models/desktop-pc/DesktopPC";
-import { DEFAULT_EXPLODE, useExplorerStore } from "../../store/useExplorerStore";
+import { DEFAULT_EXPLODE, placedSet, useExplorerStore } from "../../store/useExplorerStore";
+import { getDevice } from "../../data/devices";
 
 sceneState.explode = DEFAULT_EXPLODE;
 
-/** Smooths the explode value once per frame for everything that reads sceneState. */
+/**
+ * Smooths the explode values once per frame for everything that reads sceneState.
+ * In the Assemble quiz, placed parts ease back into their slots while the rest stay exploded.
+ */
 function ExplodeDriver() {
   useFrame((_, dt) => {
-    const { explode, reducedMotion } = useExplorerStore.getState();
+    const { explode, reducedMotion, quiz, deviceId } = useExplorerStore.getState();
     if (reducedMotion) sceneState.explode = explode;
     else easing.damp(sceneState, "explode", explode, 0.1, dt);
+
+    const assembling = quiz.active && quiz.mode === "assemble";
+    const placed = assembling ? placedSet(deviceId, quiz) : null;
+    for (const part of getDevice(deviceId).parts) {
+      const target = placed?.has(part.id) ? 0 : sceneState.explode;
+      const current = sceneState.parts[part.id];
+      if (reducedMotion || current === undefined) sceneState.parts[part.id] = target;
+      else easing.damp(sceneState.parts, part.id, target, assembling ? 0.3 : 0.06, dt);
+    }
   });
   return null;
 }

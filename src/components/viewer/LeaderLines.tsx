@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { easing } from "maath";
 import * as THREE from "three";
-import { sceneState } from "./sceneState";
+import { partExplode } from "./sceneState";
 import { useExplorerStore, type PartRole } from "../../store/useExplorerStore";
 import type { Part } from "../../types";
 
@@ -36,7 +36,7 @@ function Leader({ part, role }: { part: Part; role: PartRole }) {
   );
 
   useFrame((_, dt) => {
-    const e = sceneState.explode;
+    const e = partExplode(part.id);
     const [px, py, pz] = part.position;
     const [ox, oy, oz] = part.explodeOffset;
     const attr = line.geometry.getAttribute("position") as THREE.BufferAttribute;

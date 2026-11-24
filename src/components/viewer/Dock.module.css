@@ -116,6 +116,15 @@
   animation-play-state: running;
 }
 
+.progressStatic {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  background: var(--accent);
+  transform-origin: left center;
+  transition: transform var(--dur) var(--ease-out);
+}
+
 @keyframes step-progress {
   to {
     transform: scaleX(1);

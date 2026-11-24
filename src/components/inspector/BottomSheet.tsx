@@ -4,6 +4,7 @@ import styles from "./BottomSheet.module.css";
 import { PartCard } from "./PartCard";
 import { DeviceOverview } from "./DeviceOverview";
 import { FlowCard, flowAnnouncement } from "./FlowCard";
+import { QuizCard, quizAnnouncement, quizContentKey } from "../quiz/QuizCard";
 import { useFlowStep } from "../../hooks/useFlowStep";
 import { getDevice, getPart } from "../../data/devices";
 import { useExplorerStore, type SheetState } from "../../store/useExplorerStore";
@@ -24,7 +25,13 @@ export function BottomSheet() {
   const setSheetState = useExplorerStore((s) => s.setSheetState);
   const setInsets = useExplorerStore((s) => s.setInsets);
   const flowStep = useFlowStep();
-  const contentKey = flowStep ? `flow-${flowStep.flow.id}-${flowStep.index}` : (part?.id ?? "overview");
+  const quiz = useExplorerStore((s) => s.quiz);
+  const contentKey = quiz.active
+    ? `${quizContentKey(quiz)}-${quiz.feedback?.kind ?? ""}-${quiz.answers[quiz.index] ?? ""}-${quiz.hintPartId ?? ""}`
+    : flowStep
+      ? `flow-${flowStep.flow.id}-${flowStep.index}`
+      : (part?.id ?? "overview");
+  const swapKey = quiz.active ? quizContentKey(quiz) : contentKey;
 
   const sheetRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -62,7 +69,7 @@ export function BottomSheet() {
 
   useLayoutEffect(() => {
     contentRef.current?.scrollTo({ top: 0 });
-  }, [part?.id, flowStep?.flow.id]);
+  }, [part?.id, flowStep?.flow.id, swapKey]);
 
   const baseHeight = heights[sheetState];
   const height =
@@ -127,8 +134,10 @@ export function BottomSheet() {
     else if (dy > SWIPE_DISTANCE) step(-1);
   };
 
-  const hintText = flowStep
-    ? "Swipe up for all steps"
+  const hintText = quiz.active
+    ? "Swipe up for more"
+    : flowStep
+      ? "Swipe up for all steps"
     : part
       ? "Swipe up for specs and signs of failure"
       : "Swipe up for parts by category";
@@ -159,8 +168,10 @@ export function BottomSheet() {
       </div>
 
       <div ref={contentRef} className={styles.content}>
-        <div key={contentKey} className={styles.swap}>
-          {flowStep ? (
+        <div key={swapKey} className={styles.swap}>
+          {quiz.active ? (
+            <QuizCard device={device} moreRef={moreRef} />
+          ) : flowStep ? (
             <FlowCard device={device} active={flowStep} moreRef={moreRef} />
           ) : part ? (
             <PartCard device={device} part={part} moreRef={moreRef} />
@@ -178,7 +189,13 @@ export function BottomSheet() {
       )}
 
       <div className="sr-only" aria-live="polite">
-        {flowStep ? flowAnnouncement(flowStep) : part ? `${part.name} selected` : ""}
+        {quiz.active
+          ? quizAnnouncement(device, quiz)
+          : flowStep
+            ? flowAnnouncement(flowStep)
+            : part
+              ? `${part.name} selected`
+              : ""}
       </div>
     </section>
   );

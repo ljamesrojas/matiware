@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { X } from "lucide-react";
+import { GraduationCap, X } from "lucide-react";
 import styles from "./MobileDrawer.module.css";
 import { SidebarContent } from "./Sidebar";
 import { LevelToggle } from "./LevelToggle";
@@ -8,6 +8,7 @@ import { useExplorerStore } from "../../store/useExplorerStore";
 export function MobileDrawer() {
   const open = useExplorerStore((s) => s.drawerOpen);
   const setOpen = useExplorerStore((s) => s.setDrawerOpen);
+  const openQuiz = useExplorerStore((s) => s.openQuiz);
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const wasOpen = useRef(false);
@@ -69,6 +70,10 @@ export function MobileDrawer() {
         </div>
         <div className={styles.level}>
           <LevelToggle showLabel={false} />
+          <button type="button" className={styles.quiz} onClick={openQuiz}>
+            <GraduationCap size={17} strokeWidth={1.8} aria-hidden="true" />
+            Test yourself
+          </button>
         </div>
         <SidebarContent />
       </div>

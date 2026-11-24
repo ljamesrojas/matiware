@@ -20,7 +20,7 @@ export default function App() {
 
   useEffect(() => setReducedMotion(reducedMotion), [reducedMotion, setReducedMotion]);
 
-  // Esc closes the drawer first, then the part card, then flow mode.
+  // Esc closes the drawer first, then the part card, then flow mode or the quiz.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
@@ -28,6 +28,7 @@ export default function App() {
       if (s.drawerOpen) s.setDrawerOpen(false);
       else if (s.selectedPartId) s.select(null);
       else if (s.flow.active) s.stopFlow();
+      else if (s.quiz.active) s.exitQuiz();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

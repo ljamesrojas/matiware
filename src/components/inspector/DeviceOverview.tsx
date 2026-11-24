@@ -1,4 +1,6 @@
 import type { Ref } from "react";
+import { Hammer, ScanSearch } from "lucide-react";
+import { useExplorerStore } from "../../store/useExplorerStore";
 import styles from "./PartCard.module.css";
 import { CategoryDot } from "../common/CategoryDot";
 import { categories, categoryOrder } from "../../data/categories";
@@ -10,6 +12,7 @@ interface Props {
 }
 
 export function DeviceOverview({ device, moreRef }: Props) {
+  const startQuiz = useExplorerStore((s) => s.startQuiz);
   const rows = categoryOrder
     .map((c) => ({ id: c, count: device.parts.filter((p) => p.category === c).length }))
     .filter((r) => r.count > 0);
@@ -41,6 +44,21 @@ export function DeviceOverview({ device, moreRef }: Props) {
             </li>
           ))}
         </ul>
+        {device.quiz && (
+          <section className={styles.section} style={{ marginTop: 22 }}>
+            <h3 className={styles.heading}>Test yourself</h3>
+            <div className={styles.chips}>
+              <button type="button" className={`${styles.chip} hit`} onClick={() => startQuiz("identify")}>
+                <ScanSearch size={15} strokeWidth={1.8} aria-hidden="true" />
+                Identify parts
+              </button>
+              <button type="button" className={`${styles.chip} hit`} onClick={() => startQuiz("assemble")}>
+                <Hammer size={15} strokeWidth={1.8} aria-hidden="true" />
+                Assemble the PC
+              </button>
+            </div>
+          </section>
+        )}
       </div>
     </article>
   );

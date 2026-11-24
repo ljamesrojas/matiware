@@ -3,7 +3,7 @@ import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { easing } from "maath";
 import * as THREE from "three";
 import { useExplorerStore, type PartRole } from "../../store/useExplorerStore";
-import { sceneState } from "./sceneState";
+import { partExplode } from "./sceneState";
 import type { PartModel } from "../../models/types";
 import type { Part } from "../../types";
 
@@ -40,7 +40,7 @@ export function PartMesh({ part, model, role, hovered }: Props) {
     () => new THREE.LineBasicMaterial({ color: EDGE_DEFAULT, transparent: true, opacity: 0.5, depthWrite: false }),
     [],
   );
-  const select = useExplorerStore((s) => s.select);
+  const pickPart = useExplorerStore((s) => s.pickPart);
   const hover = useExplorerStore((s) => s.hover);
   const { Component } = model;
 
@@ -85,7 +85,7 @@ export function PartMesh({ part, model, role, hovered }: Props) {
   }, [role, model.castShadow]);
 
   useFrame((_, dt) => {
-    const e = sceneState.explode;
+    const e = partExplode(part.id);
     const [px, py, pz] = part.position;
     const [ox, oy, oz] = part.explodeOffset;
     group.current.position.set(px + ox * e, py + oy * e, pz + oz * e);
@@ -115,6 +115,8 @@ export function PartMesh({ part, model, role, hovered }: Props) {
 
   const onOver = (e: ThreeEvent<PointerEvent>) => {
     if (e.pointerType === "touch") return;
+    const { quiz } = useExplorerStore.getState();
+    if (quiz.active && quiz.mode !== "assemble") return; // nothing to click in Identify
     e.stopPropagation();
     hover(part.id);
     document.body.style.cursor = "pointer";
@@ -128,7 +130,7 @@ export function PartMesh({ part, model, role, hovered }: Props) {
   const onClick = (e: ThreeEvent<MouseEvent>) => {
     if (e.delta > 4) return; // it was a drag
     e.stopPropagation();
-    select(part.id);
+    pickPart(part.id);
   };
 
   return (

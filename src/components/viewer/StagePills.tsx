@@ -11,8 +11,11 @@ export function StagePills() {
   const explode = useExplorerStore((s) => s.explode);
 
   const flowStep = useFlowStep();
+  const quiz = useExplorerStore((s) => s.quiz);
 
-  const status = flowStep
+  const status = quiz.active
+    ? `Quiz · ${quiz.mode ? (quiz.finished ? `${quiz.mode} · Results` : quiz.mode) : "Choose a mode"}`
+    : flowStep
     ? `View · ${flowStep.flow.name} · ${flowStep.index + 1}/${flowStep.total}${flowStep.playing ? "" : " · Paused"}`
     : part
       ? `View · ${isolate ? "Isolating" : "Inspecting"} ${part.code}`

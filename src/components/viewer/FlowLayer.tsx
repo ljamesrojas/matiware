@@ -4,7 +4,7 @@ import { Html } from "@react-three/drei";
 import { Monitor, Plug, type LucideIcon } from "lucide-react";
 import * as THREE from "three";
 import styles from "./FlowLayer.module.css";
-import { partCenter, sceneState } from "./sceneState";
+import { partCenter, partExplode } from "./sceneState";
 import { FLOW_COLORS } from "./flowColors";
 import { getDevice } from "../../data/devices";
 import { useFlowStep } from "../../hooks/useFlowStep";
@@ -53,8 +53,8 @@ const fragmentShader = /* glsl */ `
 
 const TRACE_COLOR = "#1C1C1A";
 
-/** Resolves path points for the current explode amount, dropping duplicates. */
-function resolvePath(device: Device, path: FlowPoint[], explode: number, out: THREE.Vector3[]): number {
+/** Resolves path points for the parts' current explode amounts, dropping duplicates. */
+function resolvePath(device: Device, path: FlowPoint[], out: THREE.Vector3[]): number {
   let n = 0;
   for (const p of path) {
     if (n >= MAX_POINTS) break;
@@ -66,7 +66,7 @@ function resolvePath(device: Device, path: FlowPoint[], explode: number, out: TH
     } else if (p.part) {
       const part = device.parts.find((q) => q.id === p.part);
       if (!part) continue;
-      [x, y, z] = p.assembled ? part.position : partCenter(part, explode);
+      [x, y, z] = p.assembled ? part.position : partCenter(part, partExplode(part.id));
     }
     if (p.offset) {
       x += p.offset[0];
@@ -164,7 +164,7 @@ function FlowPath({ device, step, kind }: { device: Device; step: FlowStep; kind
     }
 
     // Path and its cumulative lengths.
-    const n = resolvePath(device, step.path, sceneState.explode, pts);
+    const n = resolvePath(device, step.path, pts);
     if (n < 2) return;
     lengths[0] = 0;
     for (let i = 1; i < n; i++) lengths[i] = lengths[i - 1] + pts[i].distanceTo(pts[i - 1]);

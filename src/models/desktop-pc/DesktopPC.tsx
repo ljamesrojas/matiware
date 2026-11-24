@@ -4,7 +4,7 @@ import { LeaderLines } from "../../components/viewer/LeaderLines";
 import { desktopPcModels } from ".";
 import { getDevice, getPart } from "../../data/devices";
 import { useFlowStep } from "../../hooks/useFlowStep";
-import { getPartRole, useExplorerStore, type PartRole } from "../../store/useExplorerStore";
+import { getPartRole, identifyTargetId, useExplorerStore, type PartRole } from "../../store/useExplorerStore";
 
 /** Assembles the Desktop PC from its part models, plus labels and leader lines. */
 export function DesktopPC() {
@@ -13,11 +13,28 @@ export function DesktopPC() {
   const hoveredId = useExplorerStore((s) => s.hoveredPartId);
   const isolate = useExplorerStore((s) => s.isolate);
   const flowStep = useFlowStep();
+  const quiz = useExplorerStore((s) => s.quiz);
   const connects = getPart(device, selectedId)?.connectsTo;
+
+  const identifyTarget = identifyTargetId(quiz);
+  const assembleHighlight =
+    quiz.active && quiz.mode === "assemble"
+      ? quiz.hintPartId
+        ? [quiz.hintPartId]
+        : quiz.feedback?.kind === "blocked"
+          ? quiz.feedback.missing
+          : []
+      : null;
 
   const roles: Record<string, PartRole> = {};
   for (const p of device.parts) {
-    if (flowStep) {
+    if (identifyTarget) {
+      // Identify quiz: only the part in question stands out.
+      roles[p.id] = p.id === identifyTarget ? "selected" : isolate ? "hidden" : "faded";
+    } else if (assembleHighlight) {
+      // Assemble quiz: highlight the hint, or the parts that have to go in first.
+      roles[p.id] = assembleHighlight.includes(p.id) ? "selected" : "normal";
+    } else if (flowStep) {
       // Flow mode: the step's end points are highlighted, parts it passes through stay solid.
       const { focus, via = [] } = flowStep.step;
       roles[p.id] = focus.includes(p.id)

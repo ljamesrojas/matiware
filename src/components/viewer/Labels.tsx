@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import type { Group } from "three";
 import styles from "./Labels.module.css";
-import { sceneState } from "./sceneState";
+import { partExplode } from "./sceneState";
 import { CategoryDot } from "../common/CategoryDot";
 import { useExplorerStore, type PartRole } from "../../store/useExplorerStore";
 import type { PartModel } from "../../models/types";
@@ -13,18 +13,20 @@ function PartLabel({ part, model, role }: { part: Part; model: PartModel; role: 
   const ref = useRef<Group>(null!);
   const showLabels = useExplorerStore((s) => s.showLabels);
   const hovered = useExplorerStore((s) => s.hoveredPartId === part.id);
-  const select = useExplorerStore((s) => s.select);
+  const pickPart = useExplorerStore((s) => s.pickPart);
+  // Labels would give the answer away in the Identify quiz.
+  const identifying = useExplorerStore((s) => s.quiz.active && s.quiz.mode === "identify");
   const hover = useExplorerStore((s) => s.hover);
 
   useFrame(() => {
-    const e = sceneState.explode;
+    const e = partExplode(part.id);
     const [px, py, pz] = part.position;
     const [ox, oy, oz] = part.explodeOffset;
     const [lx, ly, lz] = model.labelOffset;
     ref.current.position.set(px + ox * e + lx, py + oy * e + ly, pz + oz * e + lz);
   });
 
-  const visible = showLabels && role !== "hidden";
+  const visible = showLabels && role !== "hidden" && !identifying;
 
   return (
     <group ref={ref}>
@@ -37,7 +39,7 @@ function PartLabel({ part, model, role }: { part: Part; model: PartModel; role: 
           data-selected={role === "selected" || undefined}
           data-dim={role === "faded" || undefined}
           data-hovered={hovered || undefined}
-          onClick={() => select(part.id)}
+          onClick={() => pickPart(part.id)}
           onPointerEnter={(e) => e.pointerType === "mouse" && hover(part.id)}
           onPointerLeave={() => hover(null)}
           aria-hidden="true"
