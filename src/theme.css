@@ -1,0 +1,168 @@
+/* Bench theme — approved tokens (plan section 11). */
+:root {
+  /* Surfaces */
+  --canvas: #eeede9;
+  --panel: #fbfaf8;
+  --surface: #ffffff;
+  --border: #e4e2dc;
+  --divider: #efede8;
+  --hover: #f3f2ee;
+  --soft: #f6f4ef;
+
+  /* Text */
+  --text: #1c1c1a;
+  --text-body: #2a2926;
+  --text-2: #55534d;
+  --text-3: #6f6d66;
+
+  /* Accent: circuit-board green */
+  --accent: #2f6b57;
+  --accent-tint: #eaf0ee; /* accent 10% over white */
+  --accent-ink: #285b4a; /* accent 85% + black */
+
+  /* Signs of failure */
+  --warn-dot: #c2701f;
+  --warn-ink: #8a4b14;
+
+  /* Category colors (dots only) */
+  --cat-processing: #5865a6;
+  --cat-memory: #7a5ba6;
+  --cat-storage: #3e8a80;
+  --cat-power: #b07a2a;
+  --cat-cooling: #4c86a8;
+  --cat-connectivity: #4f8a55;
+  --cat-structure: #8a8880;
+
+  /* Type */
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  /* Shape */
+  --r: 14px;
+  --r-card: calc(var(--r) + 4px);
+  --r-sm: calc(var(--r) - 4px);
+  --r-pill: 999px;
+
+  /* Depth (floating elements only) */
+  --shadow-inspector: 0 16px 44px rgba(28, 28, 26, 0.08);
+  --shadow-dock: 0 12px 32px rgba(28, 28, 26, 0.08);
+  --shadow-sheet: 0 -10px 32px rgba(28, 28, 26, 0.1);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur: 320ms;
+
+  /* Layout */
+  --header-h: 64px;
+  --sidebar-w: clamp(260px, 21vw, 300px);
+  --inspector-w: clamp(320px, 27vw, 372px);
+  --stage-gap: 20px;
+  --hit: 40px;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --header-h: 56px;
+    --hit: 44px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled,
+button[aria-disabled="true"] {
+  cursor: default;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Mono label style used across the UI */
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* Expands the clickable area of small controls to the minimum hit target. */
+.hit {
+  position: relative;
+}
+.hit::after {
+  content: "";
+  position: absolute;
+  top: min(0px, calc((100% - var(--hit)) / 2));
+  bottom: min(0px, calc((100% - var(--hit)) / 2));
+  left: min(0px, calc((100% - var(--hit)) / 2));
+  right: min(0px, calc((100% - var(--hit)) / 2));
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes content-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

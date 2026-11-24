@@ -1,0 +1,30 @@
+import type { Device, DeviceTile, Part } from "../../types";
+import { desktopPC } from "./desktop-pc";
+
+/** Devices that have a model and content. */
+export const devices: Record<string, Device> = {
+  [desktopPC.id]: desktopPC,
+};
+
+/** Tiles shown at the top of the sidebar, in order. */
+export const deviceTiles: DeviceTile[] = [
+  { id: "desktop-pc", name: "Desktop", icon: "desktop", available: true },
+  { id: "laptop", name: "Laptop", icon: "laptop", available: false },
+  { id: "phone", name: "Phone", icon: "phone", available: false },
+];
+
+export const defaultDeviceId = desktopPC.id;
+
+export function getDevice(id: string): Device {
+  return devices[id] ?? desktopPC;
+}
+
+export function getPart(device: Device, id: string | null): Part | undefined {
+  if (!id) return undefined;
+  return device.parts.find((p) => p.id === id);
+}
+
+/** Mono subtitle, e.g. "TOWER · ATX · 10 PARTS". */
+export function deviceSubtitle(device: Device): string {
+  return `${device.meta} · ${device.parts.length} parts`.toUpperCase();
+}
