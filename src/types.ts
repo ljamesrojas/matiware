@@ -45,6 +45,27 @@ export interface Device {
   description: string;
   parts: Part[]; // in list order
   flows?: Flow[]; // step-by-step flow animations (Phase 2)
+  quiz?: QuizContent; // build-it quiz (Phase 3)
+}
+
+/* ---------- Build-it quiz (Phase 3) ---------- */
+
+export type QuizMode = "identify" | "assemble";
+
+/** A part that can only go in after other parts are in place. */
+export interface AssembleRule {
+  part: string;
+  after: string[];
+  reason: string;
+}
+
+export interface QuizContent {
+  /** Number of answer options per Identify question (including the right one). */
+  optionsPerQuestion: number;
+  /** Short how-to shown when a part is placed in Assemble mode. */
+  installTips: Record<string, string>;
+  /** Order rules for Assemble mode. Parts without a rule can go in at any time. */
+  rules: AssembleRule[];
 }
 
 /* ---------- Flow mode (Phase 2) ---------- */

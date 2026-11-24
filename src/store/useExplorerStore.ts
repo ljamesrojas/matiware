@@ -1,5 +1,14 @@
 import { create } from "zustand";
-import type { FlowKind, ReadingLevel } from "../types";
+import type { FlowKind, QuizMode, ReadingLevel } from "../types";
+import {
+  buildIdentifyQuestions,
+  missingPrereqs,
+  nextValidPart,
+  prePlacedParts,
+  assembleParts,
+  type AssembleFeedback,
+  type IdentifyQuestion,
+} from "./quiz";
 import { defaultDeviceId, getDevice, getFlow } from "../data/devices";
 
 export const DEFAULT_EXPLODE = 0.7;
@@ -13,6 +22,41 @@ export interface FlowState {
   step: number;
   playing: boolean;
 }
+
+export interface QuizState {
+  active: boolean;
+  /** null while the student is choosing a mode. */
+  mode: QuizMode | null;
+  finished: boolean;
+  // Identify
+  questions: IdentifyQuestion[];
+  index: number;
+  /** Chosen part id per question (null = not answered yet). */
+  answers: (string | null)[];
+  // Assemble
+  /** Parts the student placed, in order. */
+  placed: string[];
+  /** Out-of-order tries. */
+  attempts: { partId: string; missing: string[] }[];
+  /** Parts placed after using a hint. */
+  hinted: string[];
+  hintPartId: string | null;
+  feedback: AssembleFeedback | null;
+}
+
+const emptyQuiz: QuizState = {
+  active: false,
+  mode: null,
+  finished: false,
+  questions: [],
+  index: 0,
+  answers: [],
+  placed: [],
+  attempts: [],
+  hinted: [],
+  hintPartId: null,
+  feedback: null,
+};
 
 export type SheetState = "peek" | "half" | "full";
 
@@ -40,6 +84,7 @@ interface ExplorerState {
   sheetState: SheetState;
   insets: StageInsets;
   flow: FlowState;
+  quiz: QuizState;
 
   select: (id: string | null) => void;
   hover: (id: string | null) => void;
@@ -65,6 +110,27 @@ interface ExplorerState {
   toggleFlowPlay: () => void;
   /** Called by the flow timer when a step has finished playing. */
   advanceFlow: () => void;
+
+  /** Build-it quiz (Phase 3). */
+  openQuiz: () => void;
+  startQuiz: (mode: QuizMode) => void;
+  exitQuiz: () => void;
+  answerQuestion: (partId: string) => void;
+  nextQuestion: () => void;
+  showHint: () => void;
+  /** A part was clicked on the model, its label or the parts list. */
+  pickPart: (id: string) => void;
+}
+
+/** The part asked about in the Identify quiz, or null when no question is showing. */
+export function identifyTargetId(quiz: QuizState): string | null {
+  if (!quiz.active || quiz.mode !== "identify" || quiz.finished) return null;
+  return quiz.questions[quiz.index]?.partId ?? null;
+}
+
+/** Parts in place in Assemble mode: the fixed ones plus what the student placed. */
+export function placedSet(deviceId: string, quiz: QuizState): Set<string> {
+  return new Set([...prePlacedParts(getDevice(deviceId)), ...quiz.placed]);
 }
 
 function flowStepCount(deviceId: string, kind: FlowKind): number {
@@ -95,6 +161,7 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
   sheetState: "half",
   insets: { right: 0, bottom: 0 },
   flow: { active: false, kind: "data", step: 0, playing: false },
+  quiz: emptyQuiz,
 
   select: (id) => {
     // A new selection (or going back to the overview) opens the mobile sheet at half height.
@@ -106,10 +173,14 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
       drawerOpen: false,
       ...(changed ? { sheetState: "half" as const } : {}),
       ...(id && s.flow.active ? { flow: { ...s.flow, active: false, playing: false } } : {}),
+      ...(id && s.quiz.active ? { quiz: emptyQuiz } : {}),
     });
   },
 
   hover: (id) => {
+    const { quiz } = get();
+    // Hover would reveal part names in Identify mode (tooltip, list highlight).
+    if (id && quiz.active && quiz.mode === "identify") id = null;
     if (get().hoveredPartId !== id) set({ hoveredPartId: id });
   },
 
@@ -149,6 +220,7 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
       sheetState: "half",
       resetId: s.resetId + 1,
       flow: { ...s.flow, active: false, playing: false },
+      quiz: emptyQuiz,
     }));
     get().animateExplode(DEFAULT_EXPLODE);
   },
@@ -183,6 +255,7 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
       drawerOpen: false,
       sheetState: "half",
       flow: { active: true, kind: k, step: 0, playing: true },
+      quiz: emptyQuiz,
     });
   },
 
@@ -213,6 +286,103 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
     const last = flowStepCount(deviceId, flow.kind) - 1;
     if (flow.step < last) set({ flow: { ...flow, step: flow.step + 1 } });
     else set({ flow: { ...flow, playing: false } });
+  },
+
+  openQuiz: () =>
+    set((s) => ({
+      selectedPartId: null,
+      hoveredPartId: null,
+      drawerOpen: false,
+      sheetState: "half",
+      flow: { ...s.flow, active: false, playing: false },
+      quiz: { ...emptyQuiz, active: true },
+    })),
+
+  startQuiz: (mode) => {
+    const device = getDevice(get().deviceId);
+    if (!device.quiz) return;
+    const questions = mode === "identify" ? buildIdentifyQuestions(device) : [];
+    set((s) => ({
+      selectedPartId: null,
+      hoveredPartId: null,
+      drawerOpen: false,
+      sheetState: "half",
+      flow: { ...s.flow, active: false, playing: false },
+      quiz: { ...emptyQuiz, active: true, mode, questions, answers: questions.map(() => null) },
+    }));
+    // Identify: spread the parts so each one is easy to see. Assemble: start fully exploded.
+    get().animateExplode(mode === "assemble" ? 1 : DEFAULT_EXPLODE);
+  },
+
+  exitQuiz: () => {
+    const wasAssemble = get().quiz.mode === "assemble";
+    set({ quiz: emptyQuiz, hoveredPartId: null, sheetState: "half" });
+    if (wasAssemble) get().animateExplode(DEFAULT_EXPLODE);
+  },
+
+  answerQuestion: (partId) => {
+    const { quiz } = get();
+    if (!quiz.active || quiz.mode !== "identify" || quiz.finished) return;
+    if (quiz.answers[quiz.index] !== null) return;
+    const answers = [...quiz.answers];
+    answers[quiz.index] = partId;
+    // On mobile, open the sheet fully so the feedback and Next button are visible.
+    set({ quiz: { ...quiz, answers }, sheetState: "full" });
+  },
+
+  nextQuestion: () => {
+    const { quiz } = get();
+    if (quiz.mode !== "identify" || quiz.answers[quiz.index] === null) return;
+    if (quiz.index >= quiz.questions.length - 1) set({ quiz: { ...quiz, finished: true } });
+    else set({ quiz: { ...quiz, index: quiz.index + 1 }, sheetState: "half" });
+  },
+
+  showHint: () => {
+    const { quiz, deviceId } = get();
+    if (quiz.mode !== "assemble" || quiz.finished) return;
+    const hint = nextValidPart(getDevice(deviceId), placedSet(deviceId, quiz));
+    if (hint) set({ quiz: { ...quiz, hintPartId: hint, feedback: null } });
+  },
+
+  pickPart: (id) => {
+    const { quiz, deviceId } = get();
+    if (!quiz.active) {
+      get().select(id);
+      return;
+    }
+    if (quiz.mode !== "assemble" || quiz.finished) return; // Identify answers come from the card
+
+    // Close the mobile drawer so the student sees the part move.
+    if (get().drawerOpen) set({ drawerOpen: false });
+    const device = getDevice(deviceId);
+    const placed = placedSet(deviceId, quiz);
+    if (placed.has(id)) {
+      set({ quiz: { ...quiz, feedback: { kind: "already", partId: id } } });
+      return;
+    }
+    const { missing, reason } = missingPrereqs(device, id, placed);
+    if (missing.length) {
+      set({
+        quiz: {
+          ...quiz,
+          attempts: [...quiz.attempts, { partId: id, missing }],
+          feedback: { kind: "blocked", partId: id, missing, reason },
+        },
+      });
+      return;
+    }
+    const nextPlaced = [...quiz.placed, id];
+    const hinted = quiz.hintPartId === id ? [...quiz.hinted, id] : quiz.hinted;
+    set({
+      quiz: {
+        ...quiz,
+        placed: nextPlaced,
+        hinted,
+        hintPartId: null,
+        feedback: { kind: "placed", partId: id },
+        finished: nextPlaced.length >= assembleParts(device).length,
+      },
+    });
   },
 }));
 
