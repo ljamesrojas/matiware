@@ -42,9 +42,11 @@
   color: var(--text-2);
 }
 
-.close:hover {
-  background: var(--hover);
-  color: var(--text);
+@media (hover: hover) {
+  .close:hover {
+    background: var(--hover);
+    color: var(--text);
+  }
 }
 
 .name {
@@ -126,9 +128,11 @@
     border-color var(--dur) var(--ease-out);
 }
 
-.chip:hover {
-  background: var(--hover);
-  border-color: #d6d4cd;
+@media (hover: hover) {
+  .chip:hover {
+    background: var(--hover);
+    border-color: #d6d4cd;
+  }
 }
 
 /* Spec data-sheet rows */
@@ -222,9 +226,11 @@
   color: var(--text-2);
 }
 
-.ghost:hover {
-  background: var(--hover);
-  color: var(--text);
+@media (hover: hover) {
+  .ghost:hover {
+    background: var(--hover);
+    color: var(--text);
+  }
 }
 
 .ghostNext {

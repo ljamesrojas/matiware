@@ -1,7 +1,22 @@
 import type { CSSProperties } from "react";
-import { Expand, Focus, Minus, Plus, RotateCcw, Shrink, Tag } from "lucide-react";
+import {
+  Expand,
+  Focus,
+  Minus,
+  Pause,
+  Play,
+  Plus,
+  RotateCcw,
+  Route,
+  Shrink,
+  SkipBack,
+  SkipForward,
+  Tag,
+} from "lucide-react";
 import styles from "./Dock.module.css";
-import { useExplorerStore } from "../../store/useExplorerStore";
+import { FLOW_STEP_MS, useExplorerStore } from "../../store/useExplorerStore";
+import { useFlowStep, type ActiveFlowStep } from "../../hooks/useFlowStep";
+import { getDevice } from "../../data/devices";
 
 const ICON = { size: 17, strokeWidth: 1.8, "aria-hidden": true } as const;
 
@@ -29,7 +44,83 @@ function ExplodeSlider() {
   );
 }
 
-/** Floating dock: explode controls, Labels / Isolate toggles, zoom and reset. */
+/** Flow toggle: starts flow mode, or exits it when active. */
+function FlowToggle({ withText }: { withText: boolean }) {
+  const active = useExplorerStore((s) => s.flow.active);
+  const startFlow = useExplorerStore((s) => s.startFlow);
+  const stopFlow = useExplorerStore((s) => s.stopFlow);
+  const hasFlows = !!getDevice(useExplorerStore((s) => s.deviceId)).flows?.length;
+  if (!hasFlows) return null;
+
+  return (
+    <button
+      type="button"
+      className={withText ? styles.btn : styles.iconBtn}
+      aria-pressed={active}
+      aria-label={withText ? undefined : "Flow mode"}
+      title={active ? "Exit flow mode" : "Play how data and power move through the PC"}
+      onClick={() => (active ? stopFlow() : startFlow())}
+    >
+      <Route {...ICON} />
+      {withText && <span className={styles.text}>Flow</span>}
+    </button>
+  );
+}
+
+/** Previous / play-pause / next and the step counter with a progress bar. */
+function FlowControls({ active }: { active: ActiveFlowStep }) {
+  const stepFlow = useExplorerStore((s) => s.stepFlow);
+  const toggleFlowPlay = useExplorerStore((s) => s.toggleFlowPlay);
+  const { index, total, playing } = active;
+
+  return (
+    <>
+      <button
+        type="button"
+        className={styles.iconBtn}
+        aria-label="Previous step"
+        onClick={() => stepFlow(-1)}
+        disabled={index === 0}
+      >
+        <SkipBack {...ICON} />
+      </button>
+      <button
+        type="button"
+        className={`${styles.iconBtn} ${styles.play}`}
+        aria-label={playing ? "Pause" : "Play"}
+        onClick={toggleFlowPlay}
+      >
+        {playing ? <Pause {...ICON} /> : <Play {...ICON} />}
+      </button>
+      <button
+        type="button"
+        className={styles.iconBtn}
+        aria-label="Next step"
+        onClick={() => stepFlow(1)}
+        disabled={index === total - 1}
+      >
+        <SkipForward {...ICON} />
+      </button>
+      <span className={styles.stepCount}>
+        <span className="mono-label">
+          <span className={styles.stepWord}>Step </span>
+          {index + 1} / {total}
+        </span>
+        <span className={styles.progress} aria-hidden="true">
+          <span
+            // Restart with the step timer (new step, or play after pause).
+            key={`${active.flow.id}-${index}-${playing}`}
+            className={styles.progressFill}
+            data-playing={playing || undefined}
+            style={{ animationDuration: `${FLOW_STEP_MS}ms` }}
+          />
+        </span>
+      </span>
+    </>
+  );
+}
+
+/** Floating dock: explode controls, Labels / Isolate / Flow toggles, flow playback, zoom and reset. */
 export function Dock({ compact = false }: { compact?: boolean }) {
   const animateExplode = useExplorerStore((s) => s.animateExplode);
   const showLabels = useExplorerStore((s) => s.showLabels);
@@ -38,62 +129,85 @@ export function Dock({ compact = false }: { compact?: boolean }) {
   const toggleIsolate = useExplorerStore((s) => s.toggleIsolate);
   const zoomBy = useExplorerStore((s) => s.zoomBy);
   const resetView = useExplorerStore((s) => s.resetView);
+  const flowStep = useFlowStep();
 
   if (compact) {
     return (
       <div className={`${styles.dock} ${styles.compact}`} role="toolbar" aria-label="View controls">
-        <ExplodeSlider />
-        <span className={styles.sep} aria-hidden="true" />
-        <button
-          type="button"
-          className={styles.iconBtn}
-          aria-pressed={showLabels}
-          aria-label="Labels"
-          onClick={toggleLabels}
-        >
-          <Tag {...ICON} />
-        </button>
-        <button
-          type="button"
-          className={styles.iconBtn}
-          aria-pressed={isolate}
-          aria-label="Isolate"
-          onClick={toggleIsolate}
-        >
-          <Focus {...ICON} />
-        </button>
+        {flowStep ? (
+          <>
+            <FlowToggle withText={false} />
+            <span className={styles.sep} aria-hidden="true" />
+            <FlowControls active={flowStep} />
+          </>
+        ) : (
+          <>
+            <ExplodeSlider />
+            <span className={styles.sep} aria-hidden="true" />
+            <button
+              type="button"
+              className={styles.iconBtn}
+              aria-pressed={showLabels}
+              aria-label="Labels"
+              onClick={toggleLabels}
+            >
+              <Tag {...ICON} />
+            </button>
+            <button
+              type="button"
+              className={styles.iconBtn}
+              aria-pressed={isolate}
+              aria-label="Isolate"
+              onClick={toggleIsolate}
+            >
+              <Focus {...ICON} />
+            </button>
+            <FlowToggle withText={false} />
+          </>
+        )}
       </div>
     );
   }
 
   return (
     <div className={styles.dock} role="toolbar" aria-label="View controls">
-      <button type="button" className={styles.btn} onClick={() => animateExplode(0)}>
-        <Shrink {...ICON} />
-        <span className={styles.text}>Assemble</span>
-      </button>
-      <ExplodeSlider />
-      <button type="button" className={styles.btn} onClick={() => animateExplode(1)}>
-        <Expand {...ICON} />
-        <span className={styles.text}>Expand</span>
-      </button>
+      {flowStep ? (
+        <>
+          <FlowToggle withText />
+          <span className={styles.sep} aria-hidden="true" />
+          <FlowControls active={flowStep} />
+        </>
+      ) : (
+        <>
+          <button type="button" className={styles.btn} onClick={() => animateExplode(0)}>
+            <Shrink {...ICON} />
+            <span className={styles.text}>Assemble</span>
+          </button>
+          <ExplodeSlider />
+          <button type="button" className={styles.btn} onClick={() => animateExplode(1)}>
+            <Expand {...ICON} />
+            <span className={styles.text}>Expand</span>
+          </button>
 
-      <span className={styles.sep} aria-hidden="true" />
+          <span className={styles.sep} aria-hidden="true" />
 
-      <button type="button" className={styles.btn} aria-pressed={showLabels} onClick={toggleLabels}>
-        <Tag {...ICON} />
-        <span className={styles.text}>Labels</span>
-      </button>
-      <button
-        type="button"
-        className={styles.btn}
-        aria-pressed={isolate}
-        onClick={toggleIsolate}
-        title="Show only the selected part and its connections"
-      >
-        <Focus {...ICON} />
-        <span className={styles.text}>Isolate</span>
-      </button>
+          <button type="button" className={styles.btn} aria-pressed={showLabels} onClick={toggleLabels}>
+            <Tag {...ICON} />
+            <span className={styles.text}>Labels</span>
+          </button>
+          <button
+            type="button"
+            className={styles.btn}
+            aria-pressed={isolate}
+            onClick={toggleIsolate}
+            title="Show only the selected part and its connections"
+          >
+            <Focus {...ICON} />
+            <span className={styles.text}>Isolate</span>
+          </button>
+          <FlowToggle withText />
+        </>
+      )}
 
       <span className={styles.sep} aria-hidden="true" />
 

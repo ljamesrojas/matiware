@@ -42,16 +42,84 @@
   width: 40px;
 }
 
-.btn:hover,
-.iconBtn:hover {
-  background: var(--hover);
-  color: var(--text);
+@media (hover: hover) {
+  .btn:hover,
+  .iconBtn:hover {
+    background: var(--hover);
+    color: var(--text);
+  }
 }
 
 .btn[aria-pressed="true"],
 .iconBtn[aria-pressed="true"] {
   background: var(--accent-tint);
   color: var(--accent-ink);
+}
+
+.btn:disabled,
+.iconBtn:disabled {
+  color: var(--text-3);
+  opacity: 0.45;
+  background: transparent;
+}
+
+/* Flow playback */
+.play {
+  background: var(--accent);
+  color: #fff;
+}
+
+@media (hover: hover) {
+  .play:hover {
+    background: var(--accent-ink);
+    color: #fff;
+  }
+}
+
+.stepCount {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  min-width: 92px;
+  height: 40px;
+  padding: 0 10px 0 8px;
+}
+
+.stepCount :global(.mono-label) {
+  color: var(--text);
+}
+
+.progress {
+  position: relative;
+  display: block;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.progressFill {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  background: var(--accent);
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation-name: step-progress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+  animation-play-state: paused;
+}
+
+.progressFill[data-playing] {
+  animation-play-state: running;
+}
+
+@keyframes step-progress {
+  to {
+    transform: scaleX(1);
+  }
 }
 
 .sep {
@@ -173,4 +241,20 @@
 .compact .iconBtn {
   width: 44px;
   height: 44px;
+}
+
+.compact .stepCount {
+  min-width: 64px;
+  height: 44px;
+}
+
+.compact .stepWord {
+  display: none;
+}
+
+/* Without animation the step progress bar would jump straight to full, so hide it. */
+@media (prefers-reduced-motion: reduce) {
+  .progress {
+    display: none;
+  }
 }

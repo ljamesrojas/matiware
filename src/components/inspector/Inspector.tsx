@@ -2,6 +2,8 @@ import { useLayoutEffect, useRef } from "react";
 import styles from "./Inspector.module.css";
 import { PartCard } from "./PartCard";
 import { DeviceOverview } from "./DeviceOverview";
+import { FlowCard, flowAnnouncement } from "./FlowCard";
+import { useFlowStep } from "../../hooks/useFlowStep";
 import { getDevice, getPart } from "../../data/devices";
 import { useExplorerStore } from "../../store/useExplorerStore";
 
@@ -10,6 +12,7 @@ export function Inspector() {
   const device = getDevice(useExplorerStore((s) => s.deviceId));
   const part = getPart(device, useExplorerStore((s) => s.selectedPartId));
   const setInsets = useExplorerStore((s) => s.setInsets);
+  const flowStep = useFlowStep();
   const ref = useRef<HTMLElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -31,17 +34,23 @@ export function Inspector() {
 
   useLayoutEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 });
-  }, [part?.id]);
+  }, [part?.id, flowStep?.flow.id]);
 
   return (
     <aside className={styles.inspector} ref={ref} aria-label="Inspector">
       <div className={styles.scroll} ref={scrollRef}>
-        <div key={part?.id ?? "overview"} className={styles.swap}>
-          {part ? <PartCard device={device} part={part} /> : <DeviceOverview device={device} />}
+        <div key={flowStep ? `flow-${flowStep.flow.id}-${flowStep.index}` : (part?.id ?? "overview")} className={styles.swap}>
+          {flowStep ? (
+            <FlowCard device={device} active={flowStep} />
+          ) : part ? (
+            <PartCard device={device} part={part} />
+          ) : (
+            <DeviceOverview device={device} />
+          )}
         </div>
       </div>
       <div className="sr-only" aria-live="polite">
-        {part ? `${part.name} selected` : ""}
+        {flowStep ? flowAnnouncement(flowStep) : part ? `${part.name} selected` : ""}
       </div>
     </aside>
   );

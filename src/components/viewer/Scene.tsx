@@ -5,6 +5,7 @@ import * as THREE from "three";
 import styles from "./Scene.module.css";
 import { CameraRig, CAMERA_FOV } from "./CameraRig";
 import { sceneState } from "./sceneState";
+import { FlowLayer } from "./FlowLayer";
 import { DesktopPC } from "../../models/desktop-pc/DesktopPC";
 import { DEFAULT_EXPLODE, useExplorerStore } from "../../store/useExplorerStore";
 
@@ -56,6 +57,7 @@ export function Scene() {
 
         <ExplodeDriver />
         <DesktopPC />
+        <FlowLayer />
 
         <ContactShadows
           position={[0.6, -2.56, 0.9]}

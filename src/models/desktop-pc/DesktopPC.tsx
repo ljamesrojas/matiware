@@ -3,6 +3,7 @@ import { Labels } from "../../components/viewer/Labels";
 import { LeaderLines } from "../../components/viewer/LeaderLines";
 import { desktopPcModels } from ".";
 import { getDevice, getPart } from "../../data/devices";
+import { useFlowStep } from "../../hooks/useFlowStep";
 import { getPartRole, useExplorerStore, type PartRole } from "../../store/useExplorerStore";
 
 /** Assembles the Desktop PC from its part models, plus labels and leader lines. */
@@ -11,10 +12,25 @@ export function DesktopPC() {
   const selectedId = useExplorerStore((s) => s.selectedPartId);
   const hoveredId = useExplorerStore((s) => s.hoveredPartId);
   const isolate = useExplorerStore((s) => s.isolate);
+  const flowStep = useFlowStep();
   const connects = getPart(device, selectedId)?.connectsTo;
 
   const roles: Record<string, PartRole> = {};
-  for (const p of device.parts) roles[p.id] = getPartRole(p.id, selectedId, connects, isolate);
+  for (const p of device.parts) {
+    if (flowStep) {
+      // Flow mode: the step's end points are highlighted, parts it passes through stay solid.
+      const { focus, via = [] } = flowStep.step;
+      roles[p.id] = focus.includes(p.id)
+        ? "selected"
+        : via.includes(p.id)
+          ? "connected"
+          : isolate
+            ? "hidden"
+            : "faded";
+    } else {
+      roles[p.id] = getPartRole(p.id, selectedId, connects, isolate);
+    }
+  }
 
   return (
     <group>

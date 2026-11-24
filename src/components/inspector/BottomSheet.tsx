@@ -3,6 +3,8 @@ import { ChevronUp } from "lucide-react";
 import styles from "./BottomSheet.module.css";
 import { PartCard } from "./PartCard";
 import { DeviceOverview } from "./DeviceOverview";
+import { FlowCard, flowAnnouncement } from "./FlowCard";
+import { useFlowStep } from "../../hooks/useFlowStep";
 import { getDevice, getPart } from "../../data/devices";
 import { useExplorerStore, type SheetState } from "../../store/useExplorerStore";
 
@@ -21,6 +23,8 @@ export function BottomSheet() {
   const sheetState = useExplorerStore((s) => s.sheetState);
   const setSheetState = useExplorerStore((s) => s.setSheetState);
   const setInsets = useExplorerStore((s) => s.setInsets);
+  const flowStep = useFlowStep();
+  const contentKey = flowStep ? `flow-${flowStep.flow.id}-${flowStep.index}` : (part?.id ?? "overview");
 
   const sheetRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -54,11 +58,11 @@ export function BottomSheet() {
     if (contentRef.current) ro.observe(contentRef.current);
     if (sheetRef.current?.parentElement) ro.observe(sheetRef.current.parentElement);
     return () => ro.disconnect();
-  }, [measure, part?.id]);
+  }, [measure, contentKey]);
 
   useLayoutEffect(() => {
     contentRef.current?.scrollTo({ top: 0 });
-  }, [part?.id]);
+  }, [part?.id, flowStep?.flow.id]);
 
   const baseHeight = heights[sheetState];
   const height =
@@ -123,7 +127,11 @@ export function BottomSheet() {
     else if (dy > SWIPE_DISTANCE) step(-1);
   };
 
-  const hintText = part ? "Swipe up for specs and signs of failure" : "Swipe up for parts by category";
+  const hintText = flowStep
+    ? "Swipe up for all steps"
+    : part
+      ? "Swipe up for specs and signs of failure"
+      : "Swipe up for parts by category";
 
   return (
     <section
@@ -151,8 +159,10 @@ export function BottomSheet() {
       </div>
 
       <div ref={contentRef} className={styles.content}>
-        <div key={part?.id ?? "overview"} className={styles.swap}>
-          {part ? (
+        <div key={contentKey} className={styles.swap}>
+          {flowStep ? (
+            <FlowCard device={device} active={flowStep} moreRef={moreRef} />
+          ) : part ? (
             <PartCard device={device} part={part} moreRef={moreRef} />
           ) : (
             <DeviceOverview device={device} moreRef={moreRef} />
@@ -168,7 +178,7 @@ export function BottomSheet() {
       )}
 
       <div className="sr-only" aria-live="polite">
-        {part ? `${part.name} selected` : ""}
+        {flowStep ? flowAnnouncement(flowStep) : part ? `${part.name} selected` : ""}
       </div>
     </section>
   );

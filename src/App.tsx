@@ -7,6 +7,7 @@ import { Scene } from "./components/viewer/Scene";
 import { StagePills } from "./components/viewer/StagePills";
 import { Dock } from "./components/viewer/Dock";
 import { HoverTooltip } from "./components/viewer/HoverTooltip";
+import { FlowTimer } from "./components/viewer/FlowTimer";
 import { Inspector } from "./components/inspector/Inspector";
 import { BottomSheet } from "./components/inspector/BottomSheet";
 import { useIsMobile, usePrefersReducedMotion } from "./hooks/useMediaQuery";
@@ -19,13 +20,14 @@ export default function App() {
 
   useEffect(() => setReducedMotion(reducedMotion), [reducedMotion, setReducedMotion]);
 
-  // Esc closes the drawer first, then the part card.
+  // Esc closes the drawer first, then the part card, then flow mode.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       const s = useExplorerStore.getState();
       if (s.drawerOpen) s.setDrawerOpen(false);
       else if (s.selectedPartId) s.select(null);
+      else if (s.flow.active) s.stopFlow();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -38,6 +40,7 @@ export default function App() {
         {!isMobile && <Sidebar />}
         <main className={styles.stage} aria-label="3D model viewer">
           <Scene />
+          <FlowTimer />
           <StagePills />
           <HoverTooltip />
           <Dock compact={isMobile} />

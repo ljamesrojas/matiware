@@ -50,8 +50,9 @@ export const Motherboard = memo(function Motherboard() {
         </group>
       ))}
 
-      {/* 24-pin power connector */}
+      {/* 24-pin ATX and 8-pin EPS (CPU) power connectors */}
       <Box size={[0.12, 0.5, 0.14]} position={[1.14, 0.2, Z + 0.07]} color={C.darker} />
+      <Box size={[0.22, 0.1, 0.12]} position={[-0.75, 1.44, Z + 0.06]} color={C.darker} />
 
       {/* M.2 slot and standoff */}
       <Box size={[0.05, 0.24, 0.05]} position={[-0.48, -0.03, Z + 0.025]} color={C.slot} />

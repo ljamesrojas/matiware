@@ -1,6 +1,7 @@
 import { Rotate3d } from "lucide-react";
 import styles from "./StagePills.module.css";
 import { getDevice, getPart } from "../../data/devices";
+import { useFlowStep } from "../../hooks/useFlowStep";
 import { useExplorerStore } from "../../store/useExplorerStore";
 
 export function StagePills() {
@@ -9,8 +10,12 @@ export function StagePills() {
   const isolate = useExplorerStore((s) => s.isolate);
   const explode = useExplorerStore((s) => s.explode);
 
-  const status = part
-    ? `View · ${isolate ? "Isolating" : "Inspecting"} ${part.code}`
+  const flowStep = useFlowStep();
+
+  const status = flowStep
+    ? `View · ${flowStep.flow.name} · ${flowStep.index + 1}/${flowStep.total}${flowStep.playing ? "" : " · Paused"}`
+    : part
+      ? `View · ${isolate ? "Isolating" : "Inspecting"} ${part.code}`
     : explode < 0.01
       ? "View · Assembled"
       : `View · Exploded ${Math.round(explode * 100)}%`;
