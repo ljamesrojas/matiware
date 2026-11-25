@@ -101,6 +101,34 @@ function QuizProgress() {
   const device = getDevice(useExplorerStore((s) => s.deviceId));
   if (!quiz.mode) return null;
 
+  const hintButton = !quiz.finished && (
+    <button
+      type="button"
+      className={styles.iconBtn}
+      aria-label="Show a hint"
+      aria-pressed={!!quiz.hintPartId}
+      onClick={showHint}
+    >
+      <Lightbulb {...ICON} />
+    </button>
+  );
+
+  // Troubleshoot has no fixed length: show how many parts were checked.
+  if (quiz.mode === "troubleshoot") {
+    if (!quiz.scenario) return null;
+    return (
+      <>
+        <span className={styles.stepCount}>
+          <span className="mono-label">
+            {/* Kept on phones too: a bare number would be unclear. */}
+            Checks {quiz.checks.length}
+          </span>
+        </span>
+        {hintButton}
+      </>
+    );
+  }
+
   const identify = quiz.mode === "identify";
   const total = identify ? quiz.questions.length : assembleParts(device).length;
   const done = identify ? quiz.answers.filter((a) => a !== null).length : quiz.placed.length;
@@ -117,17 +145,7 @@ function QuizProgress() {
           <span className={styles.progressStatic} style={{ transform: `scaleX(${total ? done / total : 0})` }} />
         </span>
       </span>
-      {!identify && !quiz.finished && (
-        <button
-          type="button"
-          className={styles.iconBtn}
-          aria-label="Show a hint"
-          aria-pressed={!!quiz.hintPartId}
-          onClick={showHint}
-        >
-          <Lightbulb {...ICON} />
-        </button>
-      )}
+      {!identify && hintButton}
     </>
   );
 }

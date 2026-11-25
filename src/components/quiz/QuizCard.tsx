@@ -1,9 +1,11 @@
 import { useEffect, useRef, type ReactElement, type Ref } from "react";
-import { ArrowRight, Check, Hammer, Lightbulb, ScanSearch, X } from "lucide-react";
+import { ArrowRight, Check, Hammer, Lightbulb, ScanSearch, Wrench, X } from "lucide-react";
 import card from "../inspector/PartCard.module.css";
 import styles from "./QuizCard.module.css";
 import { getPart } from "../../data/devices";
-import { assembleParts, prePlacedParts } from "../../store/quiz";
+import { assembleParts, checkPart, getScenario, prePlacedParts } from "../../store/quiz";
+import { ScenarioPicker, TroubleshootStatus, TroubleshootSummary } from "./Troubleshoot";
+import { QuizTopRow, inSentence, listText, plural } from "./shared";
 import { useExplorerStore, type QuizState } from "../../store/useExplorerStore";
 import type { Device, QuizMode } from "../../types";
 
@@ -12,16 +14,15 @@ interface Props {
   moreRef?: Ref<HTMLDivElement>;
 }
 
-/** "A", "A and B", "A, B and C". */
-const listText = (items: string[]) =>
-  items.length < 2 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
-
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
-
 /** Inspector content in quiz mode. */
 export function QuizCard({ device, moreRef }: Props) {
   const quiz = useExplorerStore((s) => s.quiz);
   if (!quiz.mode) return <QuizChooser device={device} moreRef={moreRef} />;
+  if (quiz.mode === "troubleshoot") {
+    if (!quiz.scenario) return <ScenarioPicker device={device} moreRef={moreRef} />;
+    if (quiz.finished) return <TroubleshootSummary device={device} quiz={quiz} moreRef={moreRef} />;
+    return <TroubleshootStatus device={device} quiz={quiz} moreRef={moreRef} />;
+  }
   if (quiz.finished) return <QuizSummary device={device} quiz={quiz} moreRef={moreRef} />;
   if (quiz.mode === "identify") return <IdentifyQuestion device={device} quiz={quiz} moreRef={moreRef} />;
   return <AssembleStatus device={device} quiz={quiz} moreRef={moreRef} />;
@@ -30,39 +31,36 @@ export function QuizCard({ device, moreRef }: Props) {
 /** Key for the inspector's content swap: a new key replays the entry animation. */
 export function quizContentKey(quiz: QuizState): string {
   if (!quiz.mode) return "quiz-choose";
+  if (quiz.mode === "troubleshoot") return `quiz-troubleshoot-${quiz.scenario ?? "pick"}${quiz.finished ? "-done" : ""}`;
   if (quiz.finished) return `quiz-${quiz.mode}-done`;
   return quiz.mode === "identify" ? `quiz-identify-${quiz.index}` : "quiz-assemble";
 }
 
 /** Text for the inspector's live region. */
 export function quizAnnouncement(device: Device, quiz: QuizState): string {
-  if (!quiz.mode) return "Quiz. Choose Identify or Assemble.";
+  if (!quiz.mode) return "Quiz. Choose a mode.";
+  if (quiz.mode === "troubleshoot") {
+    const scenario = getScenario(device, quiz.scenario);
+    if (!scenario) return "Troubleshoot. Pick a problem.";
+    if (quiz.finished) return `Found it: the ${inSentence(getPart(device, scenario.culprit)?.name)}.`;
+    if (quiz.hintPartId) return `Hint: check the ${inSentence(getPart(device, quiz.hintPartId)?.name)}.`;
+    const checked = quiz.feedback?.kind === "checked" ? getPart(device, quiz.feedback.partId) : undefined;
+    if (checked) return `${checked.name}: ${checkPart(scenario, checked.id).relevance} to cause this.`;
+    return `Problem: ${scenario.title}. ${scenario.symptom}`;
+  }
   if (quiz.finished) return "Quiz finished. See your results.";
   if (quiz.mode === "identify") {
     const answer = quiz.answers[quiz.index];
     const target = getPart(device, quiz.questions[quiz.index]?.partId ?? null);
-    if (answer && target) return answer === target.id ? "Correct." : `Not quite. This is the ${target.name}.`;
+    if (answer && target) return answer === target.id ? "Correct." : `Not quite. This is the ${inSentence(target.name)}.`;
     return `Question ${quiz.index + 1} of ${quiz.questions.length}. What is the highlighted part?`;
   }
   const f = quiz.feedback;
   const part = getPart(device, f?.partId ?? null);
   if (f?.kind === "placed" && part) return `${part.name} placed.`;
   if (f?.kind === "blocked" && part) return `Not yet. ${part.name} needs other parts first.`;
-  if (quiz.hintPartId) return `Hint: try the ${getPart(device, quiz.hintPartId)?.name}.`;
+  if (quiz.hintPartId) return `Hint: try the ${inSentence(getPart(device, quiz.hintPartId)?.name)}.`;
   return "";
-}
-
-function TopRow({ label }: { label: string }) {
-  const exitQuiz = useExplorerStore((s) => s.exitQuiz);
-  return (
-    <div className={card.topRow}>
-      <span className={card.code}>Quiz</span>
-      <span className={card.category}>{label}</span>
-      <button type="button" className={card.close} onClick={exitQuiz} aria-label="Exit quiz">
-        <X size={18} strokeWidth={1.8} />
-      </button>
-    </div>
-  );
 }
 
 const modes: { id: QuizMode; title: string; text: string; Icon: typeof ScanSearch }[] = [
@@ -78,20 +76,30 @@ const modes: { id: QuizMode; title: string; text: string; Icon: typeof ScanSearc
     text: "Start fully exploded and click the parts back into place in an order that works.",
     Icon: Hammer,
   },
+  {
+    id: "troubleshoot",
+    title: "Troubleshoot",
+    text: "Read about a problem, then check parts one by one to find what is causing it.",
+    Icon: Wrench,
+  },
 ];
 
 function QuizChooser({ device, moreRef }: { device: Device; moreRef?: Ref<HTMLDivElement> }) {
   const startQuiz = useExplorerStore((s) => s.startQuiz);
+  const available = modes.filter((m) => m.id !== "troubleshoot" || device.troubleshooting?.length);
   return (
     <article className={card.card} aria-labelledby="quiz-title">
-      <TopRow label="Build-it quiz" />
+      <QuizTopRow label="Build-it quiz" />
       <h2 className={card.name} id="quiz-title">
         Test yourself
       </h2>
-      <p className={card.fullName}>Two ways to check what you have learned about the {device.name.toLowerCase()}.</p>
+      <p className={card.fullName}>
+        {available.length === 3 ? "Three" : "Two"} ways to check what you have learned about the{" "}
+        {device.name.toLowerCase()}.
+      </p>
       <hr className={card.divider} data-peek-end />
       <div className={styles.modes}>
-        {modes.map(({ id, title, text, Icon }) => (
+        {available.map(({ id, title, text, Icon }) => (
           <button key={id} type="button" className={styles.mode} onClick={() => startQuiz(id)}>
             <span className={styles.modeIcon} aria-hidden="true">
               <Icon size={18} strokeWidth={1.8} />
@@ -140,7 +148,7 @@ function IdentifyQuestion({ device, quiz, moreRef }: { device: Device; quiz: Qui
 
   return (
     <article className={card.card} aria-labelledby="quiz-q-title">
-      <TopRow label="Identify" />
+      <QuizTopRow label="Identify" />
       <span className="mono-label">
         Question {quiz.index + 1} / {quiz.questions.length} · Score {score}
       </span>
@@ -178,7 +186,7 @@ function IdentifyQuestion({ device, quiz, moreRef }: { device: Device; quiz: Qui
       {answer && (
         <div className={styles.feedback} data-tone={answer === target.id ? "good" : "warn"}>
           <p className={styles.feedbackTitle}>
-            {answer === target.id ? `Correct. That's the ${target.name}.` : `Not quite. This is the ${target.name}.`}
+            {answer === target.id ? `Correct. That's the ${inSentence(target.name)}.` : `Not quite. This is the ${inSentence(target.name)}.`}
           </p>
           <p className={styles.feedbackText}>{target.definition[level]}</p>
         </div>
@@ -202,11 +210,11 @@ function AssembleStatus({ device, quiz, moreRef }: { device: Device; quiz: QuizS
   const f = quiz.feedback;
   const part = getPart(device, f?.partId ?? null);
   const hintPart = getPart(device, quiz.hintPartId);
-  const names = (ids: string[]) => listText(ids.map((id) => getPart(device, id)?.name ?? id));
+  const names = (ids: string[]) => listText(ids.map((id) => inSentence(getPart(device, id)?.name ?? id)));
 
   return (
     <article className={card.card} aria-labelledby="quiz-a-title">
-      <TopRow label="Assemble" />
+      <QuizTopRow label="Assemble" />
       <span className="mono-label">
         Placed {quiz.placed.length} / {total} · Out of order {quiz.attempts.length}
       </span>
@@ -220,7 +228,7 @@ function AssembleStatus({ device, quiz, moreRef }: { device: Device; quiz: QuizS
 
       {hintPart ? (
         <div className={styles.feedback} data-tone="info">
-          <p className={styles.feedbackTitle}>Hint: try the {hintPart.name}.</p>
+          <p className={styles.feedbackTitle}>Hint: try the {inSentence(hintPart.name)}.</p>
           <p className={styles.feedbackText}>It is highlighted on the model.</p>
         </div>
       ) : f?.kind === "placed" && part ? (
@@ -231,19 +239,19 @@ function AssembleStatus({ device, quiz, moreRef }: { device: Device; quiz: QuizS
       ) : f?.kind === "blocked" && part ? (
         <div className={styles.feedback} data-tone="warn">
           <p className={styles.feedbackTitle}>
-            Not yet: put the {names(f.missing)} in before the {part.name}.
+            Not yet: put the {names(f.missing)} in before the {inSentence(part.name)}.
           </p>
           <p className={styles.feedbackText}>{f.reason}</p>
         </div>
       ) : f?.kind === "already" && part ? (
         <div className={styles.feedback} data-tone="info">
-          <p className={styles.feedbackTitle}>The {part.name} is already in place.</p>
+          <p className={styles.feedbackTitle}>The {inSentence(part.name)} is already in place.</p>
           <p className={styles.feedbackText}>Pick one of the parts that is still pulled out.</p>
         </div>
       ) : (
         <div className={styles.feedback} data-tone="info">
           <p className={styles.feedbackTitle}>
-            The {names(prePlacedParts(device)).toLowerCase()} {prePlacedParts(device).length === 1 ? "is" : "are"} already in place.
+            The {names(prePlacedParts(device))} {prePlacedParts(device).length === 1 ? "is" : "are"} already in place.
           </p>
           <p className={styles.feedbackText}>Start with any part that does not need another part in place first.</p>
         </div>
@@ -276,10 +284,10 @@ function AssembleStatus({ device, quiz, moreRef }: { device: Device; quiz: QuizS
 function QuizSummary({ device, quiz, moreRef }: { device: Device; quiz: QuizState; moreRef?: Ref<HTMLDivElement> }) {
   const startQuiz = useExplorerStore((s) => s.startQuiz);
   const exitQuiz = useExplorerStore((s) => s.exitQuiz);
+  const openQuiz = useExplorerStore((s) => s.openQuiz);
   const select = useExplorerStore((s) => s.select);
   const retryRef = useRef<HTMLButtonElement>(null);
   const mode = quiz.mode as QuizMode;
-  const other: QuizMode = mode === "identify" ? "assemble" : "identify";
 
   useEffect(() => retryRef.current?.focus(), []);
 
@@ -310,7 +318,7 @@ function QuizSummary({ device, quiz, moreRef }: { device: Device; quiz: QuizStat
             return (
               <li key={m.partId}>
                 <span className={styles.missedText}>
-                  It was the <strong>{right.name}</strong>
+                  It was the <strong>{inSentence(right.name)}</strong>
                   {picked ? `, you picked ${picked.name}` : ""}
                 </span>
                 <button type="button" className={styles.link} onClick={() => select(right.id)}>
@@ -352,7 +360,7 @@ function QuizSummary({ device, quiz, moreRef }: { device: Device; quiz: QuizStat
 
   return (
     <article className={card.card} aria-labelledby="quiz-result-title">
-      <TopRow label={mode === "identify" ? "Identify · Results" : "Assemble · Results"} />
+      <QuizTopRow label={mode === "identify" ? "Identify · Results" : "Assemble · Results"} />
       <span className="mono-label">Results</span>
       <h2 className={card.name} id="quiz-result-title" style={{ marginTop: 10 }}>
         {headline}
@@ -364,8 +372,8 @@ function QuizSummary({ device, quiz, moreRef }: { device: Device; quiz: QuizStat
         <button ref={retryRef} type="button" className={styles.primary} onClick={() => startQuiz(mode)}>
           Try again
         </button>
-        <button type="button" className={styles.secondary} onClick={() => startQuiz(other)}>
-          Try {other === "identify" ? "Identify" : "Assemble"}
+        <button type="button" className={styles.secondary} onClick={openQuiz}>
+          Other modes
         </button>
         <button type="button" className={styles.secondary} onClick={exitQuiz}>
           Exit quiz

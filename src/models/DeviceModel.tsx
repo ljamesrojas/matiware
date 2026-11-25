@@ -3,6 +3,7 @@ import { Labels } from "../components/viewer/Labels";
 import { LeaderLines } from "../components/viewer/LeaderLines";
 import { getModelSet } from ".";
 import { getDevice, getPart } from "../data/devices";
+import { getScenario } from "../store/quiz";
 import { useFlowStep } from "../hooks/useFlowStep";
 import { getPartRole, identifyTargetId, useExplorerStore, type PartRole } from "../store/useExplorerStore";
 
@@ -19,6 +20,8 @@ export function DeviceModel() {
   const connects = getPart(device, selectedId)?.connectsTo;
 
   const identifyTarget = identifyTargetId(quiz);
+  const scenario = quiz.active && quiz.mode === "troubleshoot" ? getScenario(device, quiz.scenario) : undefined;
+  const lastCheck = quiz.checks[quiz.checks.length - 1];
   const assembleHighlight =
     quiz.active && quiz.mode === "assemble"
       ? quiz.hintPartId
@@ -33,6 +36,10 @@ export function DeviceModel() {
     if (identifyTarget) {
       // Identify quiz: only the part in question stands out.
       roles[p.id] = p.id === identifyTarget ? "selected" : isolate ? "hidden" : "faded";
+    } else if (scenario) {
+      // Troubleshoot: highlight the hint, the last check (or the culprit once found); fade checked parts.
+      const highlight = quiz.hintPartId ?? (quiz.finished ? scenario.culprit : lastCheck);
+      roles[p.id] = p.id === highlight ? "selected" : quiz.checks.includes(p.id) ? "faded" : "normal";
     } else if (assembleHighlight) {
       // Assemble quiz: highlight the hint, or the parts that have to go in first.
       roles[p.id] = assembleHighlight.includes(p.id) ? "selected" : "normal";

@@ -99,7 +99,7 @@ export function PartMesh({ part, model, role, hovered }: Props) {
   const onOver = (e: ThreeEvent<PointerEvent>) => {
     if (e.pointerType === "touch") return;
     const { quiz } = useExplorerStore.getState();
-    if (quiz.active && quiz.mode !== "assemble") return; // nothing to click in Identify
+    if (quiz.active && (quiz.mode === "identify" || !quiz.mode)) return; // nothing to click
     e.stopPropagation();
     hover(part.id);
     document.body.style.cursor = "pointer";

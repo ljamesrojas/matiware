@@ -31,7 +31,7 @@ export function BottomSheet() {
     mode === "compare"
       ? `${swapKey}-${compare.trueScale}`
       : mode === "quiz"
-        ? `${swapKey}-${quiz.feedback?.kind ?? ""}-${quiz.answers[quiz.index] ?? ""}-${quiz.hintPartId ?? ""}`
+        ? `${swapKey}-${quiz.feedback?.kind ?? ""}-${quiz.answers[quiz.index] ?? ""}-${quiz.hintPartId ?? ""}-${quiz.checks.length}`
         : swapKey;
   const scrollKey = mode === "flow" ? `flow-${flowStep?.flow.id}` : swapKey;
 

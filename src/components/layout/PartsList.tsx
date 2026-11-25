@@ -15,11 +15,12 @@ export function PartsList() {
   const quiz = useExplorerStore((s) => s.quiz);
   const listRef = useRef<HTMLOListElement>(null);
 
-  // Quiz: the list is off in Identify (it would give answers away) and becomes
-  // "place this part" buttons in Assemble.
+  // Quiz: the list is off in Identify (it would give answers away), becomes
+  // "place this part" buttons in Assemble and "check this part" buttons in Troubleshoot.
   const identifying = quiz.active && quiz.mode === "identify" && !quiz.finished;
   const assembling = quiz.active && quiz.mode === "assemble";
   const placed = assembling ? placedSet(device.id, quiz) : null;
+  const troubleshooting = quiz.active && quiz.mode === "troubleshoot" && !!quiz.scenario;
 
   // Arrow keys move focus between rows; Enter / Space select (native button behavior).
   const onKeyDown = (e: KeyboardEvent<HTMLOListElement>) => {
@@ -42,6 +43,7 @@ export function PartsList() {
       {device.parts.map((part, index) => {
         const selected = part.id === selectedId;
         const isPlaced = placed?.has(part.id) ?? false;
+        const isChecked = troubleshooting && quiz.checks.includes(part.id);
         return (
           <li key={part.id}>
             <button
@@ -52,14 +54,20 @@ export function PartsList() {
               data-placed={isPlaced || undefined}
               aria-current={selected ? "true" : undefined}
               aria-disabled={identifying || isPlaced || undefined}
-              aria-label={assembling ? `${isPlaced ? "In place" : "Place"}: ${part.name}` : undefined}
+              aria-label={
+                assembling
+                  ? `${isPlaced ? "In place" : "Place"}: ${part.name}`
+                  : troubleshooting
+                    ? `${isChecked ? "Checked" : "Check"}: ${part.name}`
+                    : undefined
+              }
               onClick={() => !identifying && pickPart(part.id)}
               onPointerEnter={(e) => e.pointerType === "mouse" && hover(part.id)}
               onPointerLeave={() => hover(null)}
             >
               <span className={styles.num}>{String(index + 1).padStart(2, "0")}</span>
               <span className={styles.name}>{part.name}</span>
-              {isPlaced ? (
+              {isPlaced || isChecked ? (
                 <Check size={15} strokeWidth={2} className={styles.check} aria-hidden="true" />
               ) : (
                 <CategoryDot category={part.category} />

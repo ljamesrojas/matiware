@@ -312,3 +312,32 @@
     display: none;
   }
 }
+
+/* Troubleshoot */
+.clues {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-body);
+}
+
+.clues li + li {
+  margin-top: 4px;
+}
+
+.modeNum {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.tag[data-tone="good"] {
+  background: var(--accent-tint);
+  color: var(--accent-ink);
+}
+
+.tag[data-tone="warn"] {
+  background: var(--soft);
+  color: var(--warn-ink);
+}

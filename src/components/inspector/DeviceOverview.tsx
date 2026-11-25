@@ -1,5 +1,5 @@
 import type { Ref } from "react";
-import { Hammer, ScanSearch } from "lucide-react";
+import { Hammer, ScanSearch, Wrench } from "lucide-react";
 import { useExplorerStore } from "../../store/useExplorerStore";
 import styles from "./PartCard.module.css";
 import { CategoryDot } from "../common/CategoryDot";
@@ -71,6 +71,12 @@ export function DeviceOverview({ device, moreRef }: Props) {
                 <Hammer size={15} strokeWidth={1.8} aria-hidden="true" />
                 Assemble it
               </button>
+              {!!device.troubleshooting?.length && (
+                <button type="button" className={`${styles.chip} hit`} onClick={() => startQuiz("troubleshoot")}>
+                  <Wrench size={15} strokeWidth={1.8} aria-hidden="true" />
+                  Troubleshoot
+                </button>
+              )}
             </div>
           </section>
         )}
