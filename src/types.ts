@@ -47,6 +47,33 @@ export interface Device {
   parts: Part[]; // in list order
   flows?: Flow[]; // step-by-step flow animations (Phase 2)
   quiz?: QuizContent; // build-it quiz (Phase 3)
+  troubleshooting?: TroubleshootScenario[]; // troubleshooting quiz (Phase 6)
+}
+
+/* ---------- Troubleshooting (Phase 6) ---------- */
+
+/** How sensible it is to check a part for a given symptom. */
+export type CheckRelevance = "likely" | "possible" | "unlikely";
+
+export interface PartCheck {
+  relevance: CheckRelevance;
+  /** What the student finds when they check this part. */
+  finding: string;
+}
+
+/**
+ * A fault to diagnose: the student reads the symptom and clues, then checks parts one at a
+ * time until they find the culprit. Parts not listed in `checks` count as unlikely.
+ */
+export interface TroubleshootScenario {
+  id: string;
+  title: string; // "Powers on, but no picture"
+  symptom: string;
+  clues: string[];
+  culprit: string; // part id
+  cause: string;
+  fix: string;
+  checks: Record<string, PartCheck>;
 }
 
 /* ---------- Compare mode (Phase 5) ---------- */
@@ -66,7 +93,7 @@ export interface CompareTopic {
 
 /* ---------- Build-it quiz (Phase 3) ---------- */
 
-export type QuizMode = "identify" | "assemble";
+export type QuizMode = "identify" | "assemble" | "troubleshoot";
 
 /** A part that can only go in after other parts are in place. */
 export interface AssembleRule {

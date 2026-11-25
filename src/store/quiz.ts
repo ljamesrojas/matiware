@@ -1,4 +1,4 @@
-import type { Device } from "../types";
+import type { Device, PartCheck, TroubleshootScenario } from "../types";
 
 export interface IdentifyQuestion {
   partId: string;
@@ -9,7 +9,8 @@ export interface IdentifyQuestion {
 export type AssembleFeedback =
   | { kind: "placed"; partId: string }
   | { kind: "blocked"; partId: string; missing: string[]; reason: string }
-  | { kind: "already"; partId: string };
+  | { kind: "already"; partId: string }
+  | { kind: "checked"; partId: string };
 
 export function shuffle<T>(items: T[]): T[] {
   const a = [...items];
@@ -58,4 +59,25 @@ export function nextValidPart(device: Device, placed: Set<string>): string | nul
     (id) => !placed.has(id) && missingPrereqs(device, id, placed).missing.length === 0,
   );
   return valid.length ? valid[Math.floor(Math.random() * valid.length)] : null;
+}
+
+/* ---------- Troubleshooting (Phase 6) ---------- */
+
+export function getScenario(device: Device, id: string | null): TroubleshootScenario | undefined {
+  return id ? device.troubleshooting?.find((s) => s.id === id) : undefined;
+}
+
+/** Result of checking one part. Parts the scenario doesn't mention are unlikely, with no finding. */
+export function checkPart(scenario: TroubleshootScenario, partId: string): PartCheck & { known: boolean } {
+  const check = scenario.checks[partId];
+  return check ? { ...check, known: true } : { relevance: "unlikely", finding: "", known: false };
+}
+
+/** A sensible part to check next (used for hints): an unchecked likely part, or the culprit. */
+export function nextLikelyCheck(scenario: TroubleshootScenario, checked: string[]): string | null {
+  const likely = Object.entries(scenario.checks)
+    .filter(([id, c]) => c.relevance === "likely" && !checked.includes(id))
+    .map(([id]) => id);
+  if (likely.length) return likely[Math.floor(Math.random() * likely.length)];
+  return checked.includes(scenario.culprit) ? null : scenario.culprit;
 }

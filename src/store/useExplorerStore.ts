@@ -6,6 +6,8 @@ import {
   nextValidPart,
   prePlacedParts,
   assembleParts,
+  getScenario,
+  nextLikelyCheck,
   type AssembleFeedback,
   type IdentifyQuestion,
 } from "./quiz";
@@ -42,6 +44,11 @@ export interface QuizState {
   hinted: string[];
   hintPartId: string | null;
   feedback: AssembleFeedback | null;
+  // Troubleshoot
+  /** Chosen scenario id (null = picking a problem). */
+  scenario: string | null;
+  /** Parts the student checked, in order. */
+  checks: string[];
 }
 
 const emptyQuiz: QuizState = {
@@ -56,6 +63,8 @@ const emptyQuiz: QuizState = {
   hinted: [],
   hintPartId: null,
   feedback: null,
+  scenario: null,
+  checks: [],
 };
 
 export interface CompareState {
@@ -130,6 +139,8 @@ interface ExplorerState {
   answerQuestion: (partId: string) => void;
   nextQuestion: () => void;
   showHint: () => void;
+  /** Troubleshoot: start a problem. */
+  chooseScenario: (id: string) => void;
   /** A part was clicked on the model, its label or the parts list. */
   pickPart: (id: string) => void;
 
@@ -380,8 +391,18 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
     else set({ quiz: { ...quiz, index: quiz.index + 1 }, sheetState: "half" });
   },
 
+  chooseScenario: (id) =>
+    set({ sheetState: "half", quiz: { ...emptyQuiz, active: true, mode: "troubleshoot", scenario: id } }),
+
   showHint: () => {
     const { quiz, deviceId } = get();
+    if (quiz.mode === "troubleshoot") {
+      const scenario = getScenario(getDevice(deviceId), quiz.scenario);
+      if (!scenario || quiz.finished) return;
+      const hint = nextLikelyCheck(scenario, quiz.checks);
+      if (hint) set({ quiz: { ...quiz, hintPartId: hint } });
+      return;
+    }
     if (quiz.mode !== "assemble" || quiz.finished) return;
     const hint = nextValidPart(getDevice(deviceId), placedSet(deviceId, quiz));
     if (hint) set({ quiz: { ...quiz, hintPartId: hint, feedback: null } });
@@ -391,6 +412,26 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
     const { quiz, deviceId } = get();
     if (!quiz.active) {
       get().select(id);
+      return;
+    }
+    if (quiz.mode === "troubleshoot") {
+      const scenario = getScenario(getDevice(deviceId), quiz.scenario);
+      if (!scenario || quiz.finished) return;
+      if (get().drawerOpen) set({ drawerOpen: false });
+      if (quiz.checks.includes(id)) {
+        set({ quiz: { ...quiz, feedback: { kind: "already", partId: id } } });
+        return;
+      }
+      set({
+        quiz: {
+          ...quiz,
+          checks: [...quiz.checks, id],
+          hinted: quiz.hintPartId === id ? [...quiz.hinted, id] : quiz.hinted,
+          hintPartId: null,
+          feedback: { kind: "checked", partId: id },
+          finished: id === scenario.culprit,
+        },
+      });
       return;
     }
     if (quiz.mode !== "assemble" || quiz.finished) return; // Identify answers come from the card

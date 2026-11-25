@@ -1,6 +1,7 @@
 import type { Device } from "../../types";
 import { laptopFlows } from "../flows/laptop";
 import { laptopQuiz } from "../quiz/laptop";
+import { laptopScenarios } from "../troubleshoot/laptop";
 
 /**
  * Laptop — learning content and 3D placement.
@@ -278,4 +279,5 @@ export const laptop: Device = {
   ],
   flows: laptopFlows,
   quiz: laptopQuiz,
+  troubleshooting: laptopScenarios,
 };

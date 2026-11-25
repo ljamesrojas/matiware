@@ -1,6 +1,7 @@
 import type { Device } from "../../types";
 import { phoneFlows } from "../flows/phone";
 import { phoneQuiz } from "../quiz/phone";
+import { phoneScenarios } from "../troubleshoot/phone";
 
 /**
  * Smartphone — learning content and 3D placement.
@@ -297,4 +298,5 @@ export const phone: Device = {
   ],
   flows: phoneFlows,
   quiz: phoneQuiz,
+  troubleshooting: phoneScenarios,
 };
