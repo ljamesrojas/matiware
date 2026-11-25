@@ -1,16 +1,20 @@
 import type { Device, DeviceTile, Flow, FlowKind, Part } from "../../types";
 import { desktopPC } from "./desktop-pc";
+import { laptop } from "./laptop";
+import { phone } from "./phone";
 
 /** Devices that have a model and content. */
 export const devices: Record<string, Device> = {
   [desktopPC.id]: desktopPC,
+  [laptop.id]: laptop,
+  [phone.id]: phone,
 };
 
 /** Tiles shown at the top of the sidebar, in order. */
 export const deviceTiles: DeviceTile[] = [
   { id: "desktop-pc", name: "Desktop", icon: "desktop", available: true },
-  { id: "laptop", name: "Laptop", icon: "laptop", available: false },
-  { id: "phone", name: "Phone", icon: "phone", available: false },
+  { id: "laptop", name: "Laptop", icon: "laptop", available: true },
+  { id: "phone", name: "Phone", icon: "phone", available: true },
 ];
 
 export const defaultDeviceId = desktopPC.id;
