@@ -4,21 +4,13 @@ import { CameraControls } from "@react-three/drei";
 import { easing } from "maath";
 import * as THREE from "three";
 import { partCenter } from "./sceneState";
-import { desktopPcModels } from "../../models/desktop-pc";
+import { getModelSet } from "../../models";
 import { getDevice, getPart } from "../../data/devices";
 import { identifyTargetId, useExplorerStore, type StageInsets } from "../../store/useExplorerStore";
-import type { Vec3 } from "../../types";
 
 export const CAMERA_FOV = 32;
 const MIN_DISTANCE = 3.5;
 const MAX_DISTANCE = 42;
-const AZIMUTH = THREE.MathUtils.degToRad(36);
-const ELEVATION = THREE.MathUtils.degToRad(17);
-
-/** Default orbit target: the middle of the model at the given explode amount. */
-function defaultTarget(explode: number): Vec3 {
-  return [0.75 * explode, -0.05, 1.15 * explode];
-}
 
 /** Space kept free at the top of the stage for the hint / status pills. */
 const TOP_INSET = 56;
@@ -53,16 +45,22 @@ export function CameraRig() {
   const ready = useRef(false);
   const viewOffset = useRef({ x: 0, y: 0, w: 0, h: 0 });
 
-  const device = getDevice("desktop-pc");
+  const deviceId = useExplorerStore((s) => s.deviceId);
+  const device = getDevice(deviceId);
+  const { parts: models, view } = getModelSet(deviceId);
   const animate = !reducedMotion;
 
-  const defaultDistance = (e: number) =>
-    fitDistance(size.width, size.height, insets, (5.0 + 2.3 * e) * 1.08, (5.2 + 0.9 * e) * 1.1);
+  // Device view: orbit target and the world size to fit, both depending on the explode amount.
+  const defaultTarget = (e: number) => view.target(e);
+  const defaultDistance = (e: number) => {
+    const [w, h] = view.size(e);
+    return fitDistance(size.width, size.height, insets, w, h);
+  };
 
   const focusFor = (id: string) => {
     const part = getPart(device, id);
     if (!part) return null;
-    const box = desktopPcModels[id]?.focusSize ?? 2;
+    const box = models[id]?.focusSize ?? 2;
     // Frame the part with some of its surroundings so students keep their bearings.
     const extent = Math.max(box * 1.9, 4.6);
     return {
@@ -75,10 +73,12 @@ export function CameraRig() {
     const c = controls.current;
     const [tx, ty, tz] = defaultTarget(explode);
     const d = defaultDistance(explode);
+    const az = THREE.MathUtils.degToRad(view.azimuth);
+    const el = THREE.MathUtils.degToRad(view.elevation);
     c.setLookAt(
-      tx + d * Math.sin(AZIMUTH) * Math.cos(ELEVATION),
-      ty + d * Math.sin(ELEVATION),
-      tz + d * Math.cos(AZIMUTH) * Math.cos(ELEVATION),
+      tx + d * Math.sin(az) * Math.cos(el),
+      ty + d * Math.sin(el),
+      tz + d * Math.cos(az) * Math.cos(el),
       tx,
       ty,
       tz,
@@ -131,7 +131,7 @@ export function CameraRig() {
     c.dolly(c.distance * 0.2 * zoom.step, animate);
   }, [zoom, animate]);
 
-  // Reset view.
+  // Reset view (also runs when switching devices).
   useEffect(() => {
     if (!resetId) return;
     setDefaultView(animate);

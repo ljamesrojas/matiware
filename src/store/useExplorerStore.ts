@@ -9,7 +9,7 @@ import {
   type AssembleFeedback,
   type IdentifyQuestion,
 } from "./quiz";
-import { defaultDeviceId, getDevice, getFlow } from "../data/devices";
+import { defaultDeviceId, devices, getDevice, getFlow } from "../data/devices";
 
 export const DEFAULT_EXPLODE = 0.7;
 const EXPLODE_TWEEN_MS = 420;
@@ -86,6 +86,8 @@ interface ExplorerState {
   flow: FlowState;
   quiz: QuizState;
 
+  /** Switch to another device; resets selection, modes and the view. */
+  setDevice: (id: string) => void;
   select: (id: string | null) => void;
   hover: (id: string | null) => void;
   setExplode: (value: number) => void;
@@ -162,6 +164,22 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
   insets: { right: 0, bottom: 0 },
   flow: { active: false, kind: "data", step: 0, playing: false },
   quiz: emptyQuiz,
+
+  setDevice: (id) => {
+    if (!devices[id] || id === get().deviceId) return;
+    set((s) => ({
+      deviceId: id,
+      selectedPartId: null,
+      hoveredPartId: null,
+      isolate: false,
+      drawerOpen: false,
+      sheetState: "half",
+      flow: { ...s.flow, active: false, playing: false, step: 0 },
+      quiz: emptyQuiz,
+      resetId: s.resetId + 1,
+    }));
+    get().animateExplode(DEFAULT_EXPLODE);
+  },
 
   select: (id) => {
     // A new selection (or going back to the overview) opens the mobile sheet at half height.

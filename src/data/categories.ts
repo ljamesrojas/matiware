@@ -8,6 +8,7 @@ export const categories: Record<Category, CategoryInfo> = {
   power: { id: "power", name: "Power", color: "#B07A2A" },
   cooling: { id: "cooling", name: "Cooling", color: "#4C86A8" },
   connectivity: { id: "connectivity", name: "Connectivity", color: "#4F8A55" },
+  io: { id: "io", name: "Input / output", color: "#A65B6B" },
   structure: { id: "structure", name: "Structure", color: "#8A8880" },
 };
 
@@ -19,5 +20,6 @@ export const categoryOrder: Category[] = [
   "power",
   "cooling",
   "connectivity",
+  "io",
   "structure",
 ];

@@ -3,7 +3,7 @@ import { ArrowRight, Check, Hammer, Lightbulb, ScanSearch, X } from "lucide-reac
 import card from "../inspector/PartCard.module.css";
 import styles from "./QuizCard.module.css";
 import { getPart } from "../../data/devices";
-import { assembleParts } from "../../store/quiz";
+import { assembleParts, prePlacedParts } from "../../store/quiz";
 import { useExplorerStore, type QuizState } from "../../store/useExplorerStore";
 import type { Device, QuizMode } from "../../types";
 
@@ -12,12 +12,16 @@ interface Props {
   moreRef?: Ref<HTMLDivElement>;
 }
 
+/** "A", "A and B", "A, B and C". */
+const listText = (items: string[]) =>
+  items.length < 2 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 /** Inspector content in quiz mode. */
 export function QuizCard({ device, moreRef }: Props) {
   const quiz = useExplorerStore((s) => s.quiz);
-  if (!quiz.mode) return <QuizChooser moreRef={moreRef} />;
+  if (!quiz.mode) return <QuizChooser device={device} moreRef={moreRef} />;
   if (quiz.finished) return <QuizSummary device={device} quiz={quiz} moreRef={moreRef} />;
   if (quiz.mode === "identify") return <IdentifyQuestion device={device} quiz={quiz} moreRef={moreRef} />;
   return <AssembleStatus device={device} quiz={quiz} moreRef={moreRef} />;
@@ -71,12 +75,12 @@ const modes: { id: QuizMode; title: string; text: string; Icon: typeof ScanSearc
   {
     id: "assemble",
     title: "Assemble",
-    text: "Start from a fully exploded PC and click the parts back into place in an order that works.",
+    text: "Start fully exploded and click the parts back into place in an order that works.",
     Icon: Hammer,
   },
 ];
 
-function QuizChooser({ moreRef }: { moreRef?: Ref<HTMLDivElement> }) {
+function QuizChooser({ device, moreRef }: { device: Device; moreRef?: Ref<HTMLDivElement> }) {
   const startQuiz = useExplorerStore((s) => s.startQuiz);
   return (
     <article className={card.card} aria-labelledby="quiz-title">
@@ -84,7 +88,7 @@ function QuizChooser({ moreRef }: { moreRef?: Ref<HTMLDivElement> }) {
       <h2 className={card.name} id="quiz-title">
         Test yourself
       </h2>
-      <p className={card.fullName}>Two ways to check what you have learned.</p>
+      <p className={card.fullName}>Two ways to check what you have learned about the {device.name.toLowerCase()}.</p>
       <hr className={card.divider} data-peek-end />
       <div className={styles.modes}>
         {modes.map(({ id, title, text, Icon }) => (
@@ -198,7 +202,7 @@ function AssembleStatus({ device, quiz, moreRef }: { device: Device; quiz: QuizS
   const f = quiz.feedback;
   const part = getPart(device, f?.partId ?? null);
   const hintPart = getPart(device, quiz.hintPartId);
-  const names = (ids: string[]) => ids.map((id) => getPart(device, id)?.name ?? id).join(" and ");
+  const names = (ids: string[]) => listText(ids.map((id) => getPart(device, id)?.name ?? id));
 
   return (
     <article className={card.card} aria-labelledby="quiz-a-title">
@@ -234,12 +238,14 @@ function AssembleStatus({ device, quiz, moreRef }: { device: Device; quiz: QuizS
       ) : f?.kind === "already" && part ? (
         <div className={styles.feedback} data-tone="info">
           <p className={styles.feedbackTitle}>The {part.name} is already in place.</p>
-          <p className={styles.feedbackText}>Pick one of the parts still floating outside the case.</p>
+          <p className={styles.feedbackText}>Pick one of the parts that is still pulled out.</p>
         </div>
       ) : (
         <div className={styles.feedback} data-tone="info">
-          <p className={styles.feedbackTitle}>The case and motherboard are already in.</p>
-          <p className={styles.feedbackText}>Start with any part that plugs straight into the board or mounts in the case.</p>
+          <p className={styles.feedbackTitle}>
+            The {names(prePlacedParts(device)).toLowerCase()} {prePlacedParts(device).length === 1 ? "is" : "are"} already in place.
+          </p>
+          <p className={styles.feedbackText}>Start with any part that does not need another part in place first.</p>
         </div>
       )}
 

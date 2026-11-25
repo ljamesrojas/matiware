@@ -1,4 +1,4 @@
-import type { PartModel } from "../types";
+import type { DeviceModelSet, PartModel } from "../types";
 import { Chassis } from "./Chassis";
 import { Motherboard } from "./Motherboard";
 import { Cpu } from "./Cpu";
@@ -22,4 +22,15 @@ export const desktopPcModels: Record<string, PartModel> = {
   hdd: { Component: HardDrive, labelOffset: [0, 0.32, 0.55], focusSize: 1.8 },
   psu: { Component: PowerSupply, labelOffset: [0, 0.64, 0.5], focusSize: 1.9 },
   fans: { Component: CaseFans, labelOffset: [0, 1.42, 0.25], focusSize: 2.6 },
+};
+
+export const desktopPcModelSet: DeviceModelSet = {
+  parts: desktopPcModels,
+  view: {
+    azimuth: 36,
+    elevation: 17,
+    target: (e) => [0.75 * e, -0.05, 1.15 * e],
+    size: (e) => [(5.0 + 2.3 * e) * 1.08, (5.2 + 0.9 * e) * 1.1],
+    shadow: { position: [0.6, -2.56, 0.9], scale: [14, 10], far: 5, opacity: 0.38 },
+  },
 };

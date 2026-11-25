@@ -54,7 +54,7 @@ export function DeviceOverview({ device, moreRef }: Props) {
               </button>
               <button type="button" className={`${styles.chip} hit`} onClick={() => startQuiz("assemble")}>
                 <Hammer size={15} strokeWidth={1.8} aria-hidden="true" />
-                Assemble the PC
+                Assemble it
               </button>
             </div>
           </section>

@@ -1,14 +1,16 @@
-import { PartMesh } from "../../components/viewer/PartMesh";
-import { Labels } from "../../components/viewer/Labels";
-import { LeaderLines } from "../../components/viewer/LeaderLines";
-import { desktopPcModels } from ".";
-import { getDevice, getPart } from "../../data/devices";
-import { useFlowStep } from "../../hooks/useFlowStep";
-import { getPartRole, identifyTargetId, useExplorerStore, type PartRole } from "../../store/useExplorerStore";
+import { PartMesh } from "../components/viewer/PartMesh";
+import { Labels } from "../components/viewer/Labels";
+import { LeaderLines } from "../components/viewer/LeaderLines";
+import { getModelSet } from ".";
+import { getDevice, getPart } from "../data/devices";
+import { useFlowStep } from "../hooks/useFlowStep";
+import { getPartRole, identifyTargetId, useExplorerStore, type PartRole } from "../store/useExplorerStore";
 
-/** Assembles the Desktop PC from its part models, plus labels and leader lines. */
-export function DesktopPC() {
-  const device = getDevice("desktop-pc");
+/** Assembles the current device from its part models, plus labels and leader lines. */
+export function DeviceModel() {
+  const deviceId = useExplorerStore((s) => s.deviceId);
+  const device = getDevice(deviceId);
+  const models = getModelSet(deviceId).parts;
   const selectedId = useExplorerStore((s) => s.selectedPartId);
   const hoveredId = useExplorerStore((s) => s.hoveredPartId);
   const isolate = useExplorerStore((s) => s.isolate);
@@ -50,16 +52,17 @@ export function DesktopPC() {
   }
 
   return (
-    <group>
+    // Keyed by device so switching devices mounts fresh parts.
+    <group key={device.id}>
       {device.parts.map((part) => {
-        const model = desktopPcModels[part.id];
+        const model = models[part.id];
         if (!model) return null;
         return (
           <PartMesh key={part.id} part={part} model={model} role={roles[part.id]} hovered={hoveredId === part.id} />
         );
       })}
       <LeaderLines parts={device.parts} roles={roles} />
-      <Labels parts={device.parts} models={desktopPcModels} roles={roles} />
+      <Labels parts={device.parts} models={models} roles={roles} />
     </group>
   );
 }

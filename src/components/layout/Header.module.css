@@ -92,7 +92,11 @@
     min-width: 0;
   }
   .mobileTitle :global(.mono-label) {
+    max-width: 100%;
+    overflow: hidden;
     font-size: 10px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
   .mobileName {
     font-size: 16px;

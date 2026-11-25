@@ -6,7 +6,8 @@ import styles from "./Scene.module.css";
 import { CameraRig, CAMERA_FOV } from "./CameraRig";
 import { sceneState } from "./sceneState";
 import { FlowLayer } from "./FlowLayer";
-import { DesktopPC } from "../../models/desktop-pc/DesktopPC";
+import { DeviceModel } from "../../models/DeviceModel";
+import { getModelSet } from "../../models";
 import { DEFAULT_EXPLODE, placedSet, useExplorerStore } from "../../store/useExplorerStore";
 import { getDevice } from "../../data/devices";
 
@@ -36,6 +37,9 @@ function ExplodeDriver() {
 
 export function Scene() {
   const select = useExplorerStore((s) => s.select);
+  const deviceId = useExplorerStore((s) => s.deviceId);
+  const device = getDevice(deviceId);
+  const shadow = getModelSet(deviceId).view.shadow;
 
   return (
     <div className={styles.canvas}>
@@ -47,7 +51,7 @@ export function Scene() {
         onPointerMissed={(e) => {
           if (e.type === "click" && useExplorerStore.getState().selectedPartId) select(null);
         }}
-        aria-label="Interactive 3D model of a desktop PC. Use the parts list to select parts with the keyboard."
+        aria-label={`Interactive 3D model of a ${device.name.toLowerCase()}. Use the parts list to select parts with the keyboard.`}
       >
         <hemisphereLight args={["#ffffff", "#d6d3ca", 1.25]} />
         <ambientLight intensity={0.25} />
@@ -69,16 +73,17 @@ export function Scene() {
         <directionalLight position={[-6, 3, -4]} intensity={0.5} />
 
         <ExplodeDriver />
-        <DesktopPC />
+        <DeviceModel />
         <FlowLayer />
 
         <ContactShadows
-          position={[0.6, -2.56, 0.9]}
-          scale={[14, 10]}
+          key={deviceId}
+          position={shadow.position}
+          scale={shadow.scale}
           resolution={512}
           blur={2.6}
-          far={5}
-          opacity={0.38}
+          far={shadow.far}
+          opacity={shadow.opacity ?? 0.38}
           color="#1C1C1A"
         />
         <CameraRig />

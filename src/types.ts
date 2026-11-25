@@ -5,6 +5,7 @@ export type Category =
   | "power"
   | "cooling"
   | "connectivity"
+  | "io"
   | "structure";
 
 export type ReadingLevel = "beginner" | "advanced";

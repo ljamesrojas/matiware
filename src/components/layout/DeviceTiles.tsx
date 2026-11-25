@@ -12,6 +12,7 @@ const icons: Record<DeviceIcon, LucideIcon> = {
 
 export function DeviceTiles() {
   const deviceId = useExplorerStore((s) => s.deviceId);
+  const setDevice = useExplorerStore((s) => s.setDevice);
 
   return (
     <div className={styles.grid} role="group" aria-label="Devices">
@@ -28,9 +29,7 @@ export function DeviceTiles() {
             aria-pressed={selected}
             aria-disabled={!tile.available}
             aria-label={tile.available ? tile.name : `${tile.name}, coming soon`}
-            onClick={(e) => {
-              if (!tile.available) e.preventDefault();
-            }}
+            onClick={() => tile.available && setDevice(tile.id)}
           >
             <Icon size={20} strokeWidth={1.7} aria-hidden="true" />
             <span className={styles.name}>{tile.name}</span>

@@ -61,7 +61,7 @@ function FlowToggle({ withText }: { withText: boolean }) {
       className={withText ? styles.btn : styles.iconBtn}
       aria-pressed={active}
       aria-label={withText ? undefined : "Flow mode"}
-      title={active ? "Exit flow mode" : "Play how data and power move through the PC"}
+      title={active ? "Exit flow mode" : "Play how data and power move through the device"}
       onClick={() => (active ? stopFlow() : startFlow())}
     >
       <Route {...ICON} />
@@ -84,7 +84,7 @@ function QuizToggle({ withText }: { withText: boolean }) {
       className={withText ? styles.btn : styles.iconBtn}
       aria-pressed={active}
       aria-label={withText ? undefined : "Quiz"}
-      title={active ? "Exit quiz" : "Test yourself: identify parts or put the PC back together"}
+      title={active ? "Exit quiz" : "Test yourself: identify parts or put the device back together"}
       onClick={() => (active ? exitQuiz() : openQuiz())}
     >
       <GraduationCap {...ICON} />
