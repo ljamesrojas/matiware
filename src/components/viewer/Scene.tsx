@@ -8,6 +8,7 @@ import { sceneState } from "./sceneState";
 import { FlowLayer } from "./FlowLayer";
 import { DeviceModel } from "../../models/DeviceModel";
 import { getModelSet } from "../../models";
+import { CompareLayer, COMPARE_VIEW } from "./CompareLayer";
 import { DEFAULT_EXPLODE, placedSet, useExplorerStore } from "../../store/useExplorerStore";
 import { getDevice } from "../../data/devices";
 
@@ -39,7 +40,8 @@ export function Scene() {
   const select = useExplorerStore((s) => s.select);
   const deviceId = useExplorerStore((s) => s.deviceId);
   const device = getDevice(deviceId);
-  const shadow = getModelSet(deviceId).view.shadow;
+  const comparing = useExplorerStore((s) => s.compare.active);
+  const shadow = (comparing ? COMPARE_VIEW : getModelSet(deviceId).view).shadow;
 
   return (
     <div className={styles.canvas}>
@@ -73,11 +75,17 @@ export function Scene() {
         <directionalLight position={[-6, 3, -4]} intensity={0.5} />
 
         <ExplodeDriver />
-        <DeviceModel />
-        <FlowLayer />
+        {comparing ? (
+          <CompareLayer />
+        ) : (
+          <>
+            <DeviceModel />
+            <FlowLayer />
+          </>
+        )}
 
         <ContactShadows
-          key={deviceId}
+          key={comparing ? "compare" : deviceId}
           position={shadow.position}
           scale={shadow.scale}
           resolution={512}

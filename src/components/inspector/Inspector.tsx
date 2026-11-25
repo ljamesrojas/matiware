@@ -1,20 +1,12 @@
 import { useLayoutEffect, useRef } from "react";
 import styles from "./Inspector.module.css";
-import { PartCard } from "./PartCard";
-import { DeviceOverview } from "./DeviceOverview";
-import { FlowCard, flowAnnouncement } from "./FlowCard";
-import { QuizCard, quizAnnouncement, quizContentKey } from "../quiz/QuizCard";
-import { useFlowStep } from "../../hooks/useFlowStep";
-import { getDevice, getPart } from "../../data/devices";
+import { useInspectorContent } from "./useInspectorContent";
 import { useExplorerStore } from "../../store/useExplorerStore";
 
 /** Floating inspector card on the right side of the stage (desktop). */
 export function Inspector() {
-  const device = getDevice(useExplorerStore((s) => s.deviceId));
-  const part = getPart(device, useExplorerStore((s) => s.selectedPartId));
   const setInsets = useExplorerStore((s) => s.setInsets);
-  const flowStep = useFlowStep();
-  const quiz = useExplorerStore((s) => s.quiz);
+  const { mode, swapKey, announcement, render, flowStep } = useInspectorContent();
   const ref = useRef<HTMLElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -34,42 +26,21 @@ export function Inspector() {
     return () => ro.disconnect();
   }, [setInsets]);
 
+  // Back to the top for new content (but not for each step of the same flow).
+  const scrollKey = mode === "flow" ? `flow-${flowStep?.flow.id}` : swapKey;
   useLayoutEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 });
-  }, [part?.id, flowStep?.flow.id, quiz.active && quizContentKey(quiz)]);
+  }, [scrollKey]);
 
   return (
     <aside className={styles.inspector} ref={ref} aria-label="Inspector">
       <div className={styles.scroll} ref={scrollRef}>
-        <div
-          key={
-            quiz.active
-              ? quizContentKey(quiz)
-              : flowStep
-                ? `flow-${flowStep.flow.id}-${flowStep.index}`
-                : (part?.id ?? "overview")
-          }
-          className={styles.swap}
-        >
-          {quiz.active ? (
-            <QuizCard device={device} />
-          ) : flowStep ? (
-            <FlowCard device={device} active={flowStep} />
-          ) : part ? (
-            <PartCard device={device} part={part} />
-          ) : (
-            <DeviceOverview device={device} />
-          )}
+        <div key={swapKey} className={styles.swap}>
+          {render()}
         </div>
       </div>
       <div className="sr-only" aria-live="polite">
-        {quiz.active
-          ? quizAnnouncement(device, quiz)
-          : flowStep
-            ? flowAnnouncement(flowStep)
-            : part
-              ? `${part.name} selected`
-              : ""}
+        {announcement}
       </div>
     </aside>
   );

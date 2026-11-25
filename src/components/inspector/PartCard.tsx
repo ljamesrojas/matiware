@@ -1,10 +1,11 @@
 import type { Ref } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Columns3, X } from "lucide-react";
 import styles from "./PartCard.module.css";
 import { CategoryDot } from "../common/CategoryDot";
 import { ConnectsTo } from "./ConnectsTo";
 import { SpecRows } from "./SpecRows";
 import { categories } from "../../data/categories";
+import { findCompareTopic } from "../../data/compare";
 import { useExplorerStore } from "../../store/useExplorerStore";
 import type { Device, Part } from "../../types";
 
@@ -18,6 +19,8 @@ interface Props {
 export function PartCard({ device, part, moreRef }: Props) {
   const level = useExplorerStore((s) => s.level);
   const select = useExplorerStore((s) => s.select);
+  const openCompare = useExplorerStore((s) => s.openCompare);
+  const topic = findCompareTopic(device.id, part.id);
 
   const index = device.parts.findIndex((p) => p.id === part.id);
   const n = device.parts.length;
@@ -63,6 +66,14 @@ export function PartCard({ device, part, moreRef }: Props) {
         <h3 className={styles.heading}>Connects to</h3>
         <ConnectsTo device={device} ids={part.connectsTo} />
       </section>
+
+      {topic && (
+        <button type="button" className={styles.compareLink} onClick={() => openCompare(topic.id)}>
+          <Columns3 size={15} strokeWidth={1.8} aria-hidden="true" />
+          Compare {topic.name.toLowerCase()} across devices
+          <ChevronRight size={15} strokeWidth={1.8} aria-hidden="true" />
+        </button>
+      )}
 
       <div ref={moreRef} className={styles.more}>
         <section className={styles.section}>

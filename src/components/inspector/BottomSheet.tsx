@@ -1,12 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { ChevronUp } from "lucide-react";
 import styles from "./BottomSheet.module.css";
-import { PartCard } from "./PartCard";
-import { DeviceOverview } from "./DeviceOverview";
-import { FlowCard, flowAnnouncement } from "./FlowCard";
-import { QuizCard, quizAnnouncement, quizContentKey } from "../quiz/QuizCard";
-import { useFlowStep } from "../../hooks/useFlowStep";
-import { getDevice, getPart } from "../../data/devices";
+import { useInspectorContent, type InspectorMode } from "./useInspectorContent";
 import { useExplorerStore, type SheetState } from "../../store/useExplorerStore";
 
 const GRABBER_H = 22;
@@ -17,21 +12,28 @@ const SWIPE_DISTANCE = 48;
 
 const order: SheetState[] = ["peek", "half", "full"];
 
+const HINTS: Record<InspectorMode, string> = {
+  compare: "Swipe up for the comparison table",
+  quiz: "Swipe up for more",
+  flow: "Swipe up for all steps",
+  part: "Swipe up for specs and signs of failure",
+  overview: "Swipe up for parts by category",
+};
+
 /** Mobile inspector: a bottom sheet with peek, half and full heights. */
 export function BottomSheet() {
-  const device = getDevice(useExplorerStore((s) => s.deviceId));
-  const part = getPart(device, useExplorerStore((s) => s.selectedPartId));
   const sheetState = useExplorerStore((s) => s.sheetState);
   const setSheetState = useExplorerStore((s) => s.setSheetState);
   const setInsets = useExplorerStore((s) => s.setInsets);
-  const flowStep = useFlowStep();
-  const quiz = useExplorerStore((s) => s.quiz);
-  const contentKey = quiz.active
-    ? `${quizContentKey(quiz)}-${quiz.feedback?.kind ?? ""}-${quiz.answers[quiz.index] ?? ""}-${quiz.hintPartId ?? ""}`
-    : flowStep
-      ? `flow-${flowStep.flow.id}-${flowStep.index}`
-      : (part?.id ?? "overview");
-  const swapKey = quiz.active ? quizContentKey(quiz) : contentKey;
+  const { mode, swapKey, announcement, render, flowStep, quiz, compare } = useInspectorContent();
+  // Re-measure the sheet heights whenever the content inside the card can change size.
+  const contentKey =
+    mode === "compare"
+      ? `${swapKey}-${compare.trueScale}`
+      : mode === "quiz"
+        ? `${swapKey}-${quiz.feedback?.kind ?? ""}-${quiz.answers[quiz.index] ?? ""}-${quiz.hintPartId ?? ""}`
+        : swapKey;
+  const scrollKey = mode === "flow" ? `flow-${flowStep?.flow.id}` : swapKey;
 
   const sheetRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -69,7 +71,7 @@ export function BottomSheet() {
 
   useLayoutEffect(() => {
     contentRef.current?.scrollTo({ top: 0 });
-  }, [part?.id, flowStep?.flow.id, swapKey]);
+  }, [scrollKey]);
 
   const baseHeight = heights[sheetState];
   const height =
@@ -134,13 +136,7 @@ export function BottomSheet() {
     else if (dy > SWIPE_DISTANCE) step(-1);
   };
 
-  const hintText = quiz.active
-    ? "Swipe up for more"
-    : flowStep
-      ? "Swipe up for all steps"
-    : part
-      ? "Swipe up for specs and signs of failure"
-      : "Swipe up for parts by category";
+  const hintText = HINTS[mode];
 
   return (
     <section
@@ -169,15 +165,7 @@ export function BottomSheet() {
 
       <div ref={contentRef} className={styles.content}>
         <div key={swapKey} className={styles.swap}>
-          {quiz.active ? (
-            <QuizCard device={device} moreRef={moreRef} />
-          ) : flowStep ? (
-            <FlowCard device={device} active={flowStep} moreRef={moreRef} />
-          ) : part ? (
-            <PartCard device={device} part={part} moreRef={moreRef} />
-          ) : (
-            <DeviceOverview device={device} moreRef={moreRef} />
-          )}
+          {render(moreRef)}
         </div>
       </div>
 
@@ -189,13 +177,7 @@ export function BottomSheet() {
       )}
 
       <div className="sr-only" aria-live="polite">
-        {quiz.active
-          ? quizAnnouncement(device, quiz)
-          : flowStep
-            ? flowAnnouncement(flowStep)
-            : part
-              ? `${part.name} selected`
-              : ""}
+        {announcement}
       </div>
     </section>
   );

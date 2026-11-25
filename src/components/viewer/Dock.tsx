@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import {
+  Columns3,
   Expand,
   Focus,
   GraduationCap,
@@ -195,8 +196,25 @@ export function Dock({ compact = false }: { compact?: boolean }) {
   const resetView = useExplorerStore((s) => s.resetView);
   const flowStep = useFlowStep();
   const quizActive = useExplorerStore((s) => s.quiz.active);
+  const comparing = useExplorerStore((s) => s.compare.active);
+  const exitCompare = useExplorerStore((s) => s.exitCompare);
+  const compareExit = (withText: boolean) => (
+    <button
+      type="button"
+      className={withText ? styles.btn : styles.iconBtn}
+      aria-pressed
+      aria-label={withText ? undefined : "Exit compare mode"}
+      title="Exit compare mode"
+      onClick={exitCompare}
+    >
+      <Columns3 {...ICON} />
+      {withText && <span className={styles.text}>Compare</span>}
+    </button>
+  );
 
   if (compact) {
+    // On phones the compare card has its own close button; the pill would only cover the models.
+    if (comparing) return null;
     return (
       <div className={`${styles.dock} ${styles.compact}`} role="toolbar" aria-label="View controls">
         {quizActive ? (
@@ -242,7 +260,9 @@ export function Dock({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className={styles.dock} role="toolbar" aria-label="View controls">
-      {quizActive ? (
+      {comparing ? (
+        compareExit(true)
+      ) : quizActive ? (
         <>
           <QuizToggle withText />
           <span className={styles.sep} aria-hidden="true" />

@@ -4,6 +4,7 @@ import { useExplorerStore } from "../../store/useExplorerStore";
 import styles from "./PartCard.module.css";
 import { CategoryDot } from "../common/CategoryDot";
 import { categories, categoryOrder } from "../../data/categories";
+import { compareTopics } from "../../data/compare";
 import type { Device } from "../../types";
 
 interface Props {
@@ -13,6 +14,8 @@ interface Props {
 
 export function DeviceOverview({ device, moreRef }: Props) {
   const startQuiz = useExplorerStore((s) => s.startQuiz);
+  const openCompare = useExplorerStore((s) => s.openCompare);
+  const topics = compareTopics.filter((t) => t.parts[device.id]);
   const rows = categoryOrder
     .map((c) => ({ id: c, count: device.parts.filter((p) => p.category === c).length }))
     .filter((r) => r.count > 0);
@@ -44,6 +47,18 @@ export function DeviceOverview({ device, moreRef }: Props) {
             </li>
           ))}
         </ul>
+        {topics.length > 0 && (
+          <section className={styles.section} style={{ marginTop: 22 }}>
+            <h3 className={styles.heading}>Compare with other devices</h3>
+            <div className={styles.chips}>
+              {topics.map((t) => (
+                <button key={t.id} type="button" className={`${styles.chip} hit`} onClick={() => openCompare(t.id)}>
+                  {t.name}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
         {device.quiz && (
           <section className={styles.section} style={{ marginTop: 22 }}>
             <h3 className={styles.heading}>Test yourself</h3>

@@ -2,6 +2,7 @@ import { Rotate3d } from "lucide-react";
 import styles from "./StagePills.module.css";
 import { getDevice, getPart } from "../../data/devices";
 import { useFlowStep } from "../../hooks/useFlowStep";
+import { getCompareTopic } from "../../data/compare";
 import { useExplorerStore } from "../../store/useExplorerStore";
 
 export function StagePills() {
@@ -12,8 +13,11 @@ export function StagePills() {
 
   const flowStep = useFlowStep();
   const quiz = useExplorerStore((s) => s.quiz);
+  const compare = useExplorerStore((s) => s.compare);
 
-  const status = quiz.active
+  const status = compare.active
+    ? `Compare · ${getCompareTopic(compare.topic).name} · ${compare.trueScale ? "True scale" : "Same size"}`
+    : quiz.active
     ? `Quiz · ${quiz.mode ? (quiz.finished ? `${quiz.mode} · Results` : quiz.mode) : "Choose a mode"}`
     : flowStep
     ? `View · ${flowStep.flow.name} · ${flowStep.index + 1}/${flowStep.total}${flowStep.playing ? "" : " · Paused"}`

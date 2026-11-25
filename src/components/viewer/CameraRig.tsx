@@ -5,6 +5,7 @@ import { easing } from "maath";
 import * as THREE from "three";
 import { partCenter } from "./sceneState";
 import { getModelSet } from "../../models";
+import { COMPARE_VIEW } from "./CompareLayer";
 import { getDevice, getPart } from "../../data/devices";
 import { identifyTargetId, useExplorerStore, type StageInsets } from "../../store/useExplorerStore";
 
@@ -47,7 +48,9 @@ export function CameraRig() {
 
   const deviceId = useExplorerStore((s) => s.deviceId);
   const device = getDevice(deviceId);
-  const { parts: models, view } = getModelSet(deviceId);
+  const comparing = useExplorerStore((s) => s.compare.active);
+  const { parts: models, view: deviceView } = getModelSet(deviceId);
+  const view = comparing ? COMPARE_VIEW : deviceView;
   const animate = !reducedMotion;
 
   // Device view: orbit target and the world size to fit, both depending on the explode amount.
@@ -131,10 +134,16 @@ export function CameraRig() {
     c.dolly(c.distance * 0.2 * zoom.step, animate);
   }, [zoom, animate]);
 
-  // Reset view (also runs when switching devices).
+  // Reset view (also runs when switching devices and entering or leaving Compare mode).
+  // If a part is selected at the same time (jumping to a part from Compare), focus on it.
   useEffect(() => {
     if (!resetId) return;
     setDefaultView(animate);
+    const focus = selectedId ? focusFor(selectedId) : null;
+    if (focus) {
+      controls.current.moveTo(...focus.target, animate);
+      controls.current.dollyTo(focus.distance, animate);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetId]);
 

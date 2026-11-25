@@ -4,6 +4,7 @@ import { easing } from "maath";
 import * as THREE from "three";
 import { useExplorerStore, type PartRole } from "../../store/useExplorerStore";
 import { partExplode } from "./sceneState";
+import { addPartEdges } from "./edges";
 import type { PartModel } from "../../models/types";
 import type { Part } from "../../types";
 
@@ -46,28 +47,10 @@ export function PartMesh({ part, model, role, hovered }: Props) {
 
   // Collect materials and add outline edges to each mesh once the geometry is mounted.
   useLayoutEffect(() => {
-    const created: THREE.LineSegments[] = [];
-    const mats: THREE.Material[] = [];
-    group.current.traverse((obj) => {
-      const mesh = obj as THREE.Mesh;
-      if (!mesh.isMesh) return;
-      mats.push(...(Array.isArray(mesh.material) ? mesh.material : [mesh.material]));
-      mesh.receiveShadow = true;
-      if (mesh.userData.noEdges) return;
-      const lines = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, 25), edgeMaterial);
-      lines.raycast = noRaycast;
-      lines.userData.isEdge = true;
-      mesh.add(lines);
-      created.push(lines);
-    });
+    const { materials: mats, dispose } = addPartEdges(group.current, edgeMaterial);
     materials.current = mats;
     fade.current.applied = -1;
-    return () => {
-      created.forEach((l) => {
-        l.removeFromParent();
-        l.geometry.dispose();
-      });
-    };
+    return dispose;
   }, [edgeMaterial]);
 
   useEffect(() => () => edgeMaterial.dispose(), [edgeMaterial]);
