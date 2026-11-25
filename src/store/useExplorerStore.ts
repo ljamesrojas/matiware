@@ -58,6 +58,15 @@ const emptyQuiz: QuizState = {
   feedback: null,
 };
 
+export interface CompareState {
+  active: boolean;
+  topic: string;
+  /** Show the parts at their real relative size instead of the same size. */
+  trueScale: boolean;
+}
+
+const compareOff = (c: CompareState): CompareState => ({ ...c, active: false });
+
 export type SheetState = "peek" | "half" | "full";
 
 /** Space covered by floating UI, so the camera can center the model in what is left. */
@@ -85,6 +94,7 @@ interface ExplorerState {
   insets: StageInsets;
   flow: FlowState;
   quiz: QuizState;
+  compare: CompareState;
 
   /** Switch to another device; resets selection, modes and the view. */
   setDevice: (id: string) => void;
@@ -122,6 +132,14 @@ interface ExplorerState {
   showHint: () => void;
   /** A part was clicked on the model, its label or the parts list. */
   pickPart: (id: string) => void;
+
+  /** Compare mode (Phase 5). */
+  openCompare: (topic?: string) => void;
+  setCompareTopic: (topic: string) => void;
+  setTrueScale: (on: boolean) => void;
+  exitCompare: () => void;
+  /** Leave Compare mode and open a part in its own device. */
+  openPartIn: (deviceId: string, partId: string) => void;
 }
 
 /** The part asked about in the Identify quiz, or null when no question is showing. */
@@ -164,6 +182,7 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
   insets: { right: 0, bottom: 0 },
   flow: { active: false, kind: "data", step: 0, playing: false },
   quiz: emptyQuiz,
+  compare: { active: false, topic: "memory", trueScale: false },
 
   setDevice: (id) => {
     if (!devices[id] || id === get().deviceId) return;
@@ -176,6 +195,7 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
       sheetState: "half",
       flow: { ...s.flow, active: false, playing: false, step: 0 },
       quiz: emptyQuiz,
+      compare: compareOff(s.compare),
       resetId: s.resetId + 1,
     }));
     get().animateExplode(DEFAULT_EXPLODE);
@@ -192,6 +212,7 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
       ...(changed ? { sheetState: "half" as const } : {}),
       ...(id && s.flow.active ? { flow: { ...s.flow, active: false, playing: false } } : {}),
       ...(id && s.quiz.active ? { quiz: emptyQuiz } : {}),
+      ...(id && s.compare.active ? { compare: compareOff(s.compare), resetId: s.resetId + 1 } : {}),
     });
   },
 
@@ -239,6 +260,7 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
       resetId: s.resetId + 1,
       flow: { ...s.flow, active: false, playing: false },
       quiz: emptyQuiz,
+      compare: compareOff(s.compare),
     }));
     get().animateExplode(DEFAULT_EXPLODE);
   },
@@ -274,6 +296,7 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
       sheetState: "half",
       flow: { active: true, kind: k, step: 0, playing: true },
       quiz: emptyQuiz,
+      ...(s.compare.active ? { compare: compareOff(s.compare), resetId: s.resetId + 1 } : {}),
     });
   },
 
@@ -314,6 +337,7 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
       sheetState: "half",
       flow: { ...s.flow, active: false, playing: false },
       quiz: { ...emptyQuiz, active: true },
+      ...(s.compare.active ? { compare: compareOff(s.compare), resetId: s.resetId + 1 } : {}),
     })),
 
   startQuiz: (mode) => {
@@ -327,6 +351,7 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
       sheetState: "half",
       flow: { ...s.flow, active: false, playing: false },
       quiz: { ...emptyQuiz, active: true, mode, questions, answers: questions.map(() => null) },
+      ...(s.compare.active ? { compare: compareOff(s.compare), resetId: s.resetId + 1 } : {}),
     }));
     // Identify: spread the parts so each one is easy to see. Assemble: start fully exploded.
     get().animateExplode(mode === "assemble" ? 1 : DEFAULT_EXPLODE);
@@ -401,6 +426,30 @@ export const useExplorerStore = create<ExplorerState>()((set, get) => ({
         finished: nextPlaced.length >= assembleParts(device).length,
       },
     });
+  },
+
+  openCompare: (topic) =>
+    set((s) => ({
+      selectedPartId: null,
+      hoveredPartId: null,
+      drawerOpen: false,
+      sheetState: "half",
+      flow: { ...s.flow, active: false, playing: false },
+      quiz: emptyQuiz,
+      compare: { ...s.compare, active: true, topic: topic ?? s.compare.topic },
+      resetId: s.resetId + 1,
+    })),
+
+  setCompareTopic: (topic) => set((s) => ({ compare: { ...s.compare, topic } })),
+  setTrueScale: (on) => set((s) => ({ compare: { ...s.compare, trueScale: on } })),
+
+  exitCompare: () =>
+    set((s) => ({ compare: compareOff(s.compare), sheetState: "half", resetId: s.resetId + 1 })),
+
+  openPartIn: (deviceId, partId) => {
+    if (get().deviceId !== deviceId) get().setDevice(deviceId);
+    else set((s) => ({ compare: compareOff(s.compare), resetId: s.resetId + 1 }));
+    get().select(partId);
   },
 }));
 

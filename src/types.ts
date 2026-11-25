@@ -49,6 +49,21 @@ export interface Device {
   quiz?: QuizContent; // build-it quiz (Phase 3)
 }
 
+/* ---------- Compare mode (Phase 5) ---------- */
+
+/** One part type compared side by side across devices. */
+export interface CompareTopic {
+  id: string; // "memory"
+  name: string; // "Memory"
+  title: string; // "Memory across devices"
+  question: string;
+  /** Which part represents this topic in each device (device id → part id). */
+  parts: Record<string, string>;
+  /** Comparison rows; values keyed by device id. */
+  rows: { label: string; values: Record<string, string> }[];
+  takeaway: LeveledText;
+}
+
 /* ---------- Build-it quiz (Phase 3) ---------- */
 
 export type QuizMode = "identify" | "assemble";

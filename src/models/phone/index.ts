@@ -30,6 +30,7 @@ export const phoneModels: Record<string, PartModel> = {
 
 export const phoneModelSet: DeviceModelSet = {
   parts: phoneModels,
+  cmPerUnit: 2,
   view: {
     azimuth: 40,
     elevation: 10,

@@ -10,6 +10,8 @@ export interface PartModel {
   focusSize: number;
   /** Large shells (the case) skip casting shadows so the inside stays readable. */
   castShadow?: boolean;
+  /** Rotation used in Compare mode so the part faces the viewer like the other devices. */
+  compareRotation?: Vec3;
 }
 
 /** How the camera frames a device and where its floor shadow sits. */
@@ -29,4 +31,6 @@ export interface DeviceView {
 export interface DeviceModelSet {
   parts: Record<string, PartModel>;
   view: DeviceView;
+  /** Real-world size of one scene unit, used for the True scale view in Compare mode. */
+  cmPerUnit: number;
 }
