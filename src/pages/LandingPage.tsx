@@ -145,7 +145,11 @@ export function LandingPage() {
             <p className={styles.eyebrow}>About the developer</p>
             <div className={styles.aboutCard}>
               <div className={styles.avatar} aria-hidden="true">
-                {developer.initials}
+                {developer.photo ? (
+                  <img src={developer.photo} alt="" width={88} height={88} loading="lazy" decoding="async" />
+                ) : (
+                  developer.initials
+                )}
               </div>
               <div className={styles.aboutBody}>
                 <h2 className={styles.aboutName}>{developer.name}</h2>

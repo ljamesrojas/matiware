@@ -1,5 +1,7 @@
 /** Copy and links for the landing page. */
 
+import developerPhoto from "../assets/developer.webp";
+
 export const links = {
   portfolio: "https://ljrojas.vercel.app/",
   github: "https://github.com/ljamesrojas/matiware",
@@ -38,7 +40,8 @@ export const deviceBlurbs: Record<string, string> = {
 };
 
 export const developer = {
-  initials: "LJ",
+  initials: "LJ", // shown if the photo is missing
+  photo: developerPhoto as string | undefined,
   name: "Lawrenze James Rojas",
   role: "BSIT student · Gordon College",
   note: "Hi, I'm LJ, a BSIT student and full-stack web developer from the Philippines. I built Matware because computer hardware makes more sense when you can take it apart and see how each part connects to the rest. I hope it helps fellow IT students learn by exploring, not just memorizing.",

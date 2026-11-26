@@ -26,7 +26,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,svg,png,woff2,webmanifest}"],
+        globPatterns: ["**/*.{js,css,html,svg,png,webp,woff2,webmanifest}"],
         // The main bundle (three.js) is about 1.1 MB.
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         cleanupOutdatedCaches: true,
