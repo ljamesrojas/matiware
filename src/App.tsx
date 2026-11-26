@@ -3,6 +3,7 @@ import styles from "./App.module.css";
 import { Header } from "./components/layout/Header";
 import { Sidebar } from "./components/layout/Sidebar";
 import { MobileDrawer } from "./components/layout/MobileDrawer";
+import { UpdatePrompt } from "./components/layout/UpdatePrompt";
 import { Scene } from "./components/viewer/Scene";
 import { StagePills } from "./components/viewer/StagePills";
 import { Dock } from "./components/viewer/Dock";
@@ -50,6 +51,7 @@ export default function App() {
         </main>
       </div>
       {isMobile && <MobileDrawer />}
+      <UpdatePrompt />
     </div>
   );
 }
