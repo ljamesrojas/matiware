@@ -3,6 +3,7 @@ import styles from "./Header.module.css";
 import { LevelToggle } from "./LevelToggle";
 import { useExplorerStore } from "../../store/useExplorerStore";
 import { deviceSubtitle, getDevice } from "../../data/devices";
+import { homeHref } from "../../router";
 
 export function Header() {
   const device = getDevice(useExplorerStore((s) => s.deviceId));
@@ -14,10 +15,12 @@ export function Header() {
     <header className={styles.header}>
       {/* Desktop */}
       <div className={styles.brand}>
-        <span className={styles.logo} aria-hidden="true">
-          <Cpu size={18} strokeWidth={1.8} />
-        </span>
-        <span className={styles.wordmark}>Matware</span>
+        <a href={homeHref} className={styles.home} aria-label="Matware home">
+          <span className={styles.logo} aria-hidden="true">
+            <Cpu size={18} strokeWidth={1.8} />
+          </span>
+          <span className={styles.wordmark}>Matware</span>
+        </a>
         <span className={styles.sep} aria-hidden="true" />
         <nav aria-label="Breadcrumb" className={`${styles.crumbs} mono-label`}>
           <span>Devices</span>

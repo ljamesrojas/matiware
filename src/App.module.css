@@ -25,3 +25,11 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.loading {
+  display: grid;
+  place-items: center;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--canvas);
+}

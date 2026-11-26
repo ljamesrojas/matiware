@@ -1,0 +1,495 @@
+/* Landing page (plan section 4b), Bench theme. */
+
+.page {
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  background: var(--panel);
+  color: var(--text);
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* Header */
+
+.header {
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.headerInner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 72px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: var(--r-sm);
+  color: inherit;
+  text-decoration: none;
+}
+
+.logo {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+}
+
+.wordmark {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: var(--r-pill);
+  color: #3d3b36;
+  font-size: 14px;
+  text-decoration: none;
+  transition: background var(--dur) var(--ease-out);
+}
+
+.navLink:hover {
+  background: #f1f0ec;
+  color: var(--text);
+}
+
+.navCta {
+  margin-left: 8px;
+}
+
+/* Buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: var(--r-pill);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background var(--dur) var(--ease-out),
+    border-color var(--dur) var(--ease-out);
+}
+
+.primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.primary:hover {
+  background: var(--accent-ink);
+}
+
+.secondary {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.secondary:hover {
+  background: var(--hover);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+/* Hero */
+
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 48px;
+  padding-top: 72px;
+  padding-bottom: 64px;
+}
+
+.heroText {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+.eyebrow {
+  margin: 0 0 16px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  margin: 0;
+  font-size: clamp(38px, 5vw, 56px);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.heroLead {
+  max-width: 520px;
+  margin: 24px 0 0;
+  color: var(--text-2);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.stage {
+  position: relative;
+  flex: 1 1 520px;
+  min-width: 0;
+  height: 480px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--r) + 8px);
+  background: var(--canvas);
+}
+
+.previewCard {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  width: 232px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--r) + 2px);
+  background: var(--surface);
+  box-shadow: var(--shadow-inspector);
+}
+
+.previewTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.code {
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: var(--hover);
+  color: #3d3b36;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+.previewName {
+  margin: 10px 0 2px;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.previewText {
+  margin: 0;
+  color: var(--text-body);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* How it works */
+
+.band {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 40px;
+  padding-top: 64px;
+  padding-bottom: 64px;
+}
+
+.stepNum {
+  margin: 0;
+  color: var(--accent-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.stepTitle {
+  margin: 12px 0 8px;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.stepText {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Sections */
+
+.section {
+  padding-top: 72px;
+  padding-bottom: 72px;
+}
+
+.sectionTitle {
+  margin: 0 0 32px;
+  font-size: clamp(28px, 3.5vw, 36px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* Devices */
+
+.deviceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.deviceCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color var(--dur) var(--ease-out),
+    box-shadow var(--dur) var(--ease-out);
+}
+
+.deviceCard:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-dock);
+}
+
+.deviceTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.deviceIcon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r);
+  background: var(--accent-tint);
+  color: var(--accent-ink);
+}
+
+.tag {
+  padding: 4px 8px;
+  border-radius: var(--r-pill);
+  background: var(--accent-tint);
+  color: var(--accent-ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.deviceName {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.deviceMeta {
+  margin: 4px 0 0;
+}
+
+.deviceText {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.deviceLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  color: var(--accent-ink);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.deviceCard:hover .deviceLink {
+  text-decoration: underline;
+}
+
+/* About the developer */
+
+.aboutBand {
+  border-top: 1px solid var(--border);
+  background: var(--canvas);
+}
+
+.aboutCard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 28px;
+  padding: 32px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--r) + 6px);
+  background: var(--surface);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: var(--accent-tint);
+  color: var(--accent-ink);
+  font-size: 30px;
+  font-weight: 500;
+}
+
+.aboutBody {
+  flex: 1 1 360px;
+  min-width: 0;
+}
+
+.aboutName {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.aboutRole {
+  margin: 6px 0 0;
+}
+
+.aboutNote {
+  max-width: 640px;
+  margin: 16px 0 0;
+  color: var(--text-body);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.aboutCard .actions {
+  margin-top: 24px;
+}
+
+/* Footer */
+
+.footer {
+  border-top: 1px solid var(--border);
+}
+
+.footerInner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 28px;
+  padding-bottom: 28px;
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 20px;
+}
+
+.footerLinks a {
+  color: var(--text-2);
+}
+
+.footerLinks a:hover {
+  color: var(--text);
+}
+
+/* Small screens */
+
+@media (max-width: 767px) {
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .navCta {
+    margin-left: 0;
+  }
+  .hero {
+    gap: 32px;
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+  .stage {
+    height: 340px;
+    padding: 12px;
+  }
+  .previewCard {
+    display: none;
+  }
+  .section {
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+  .aboutCard {
+    padding: 24px;
+  }
+}
