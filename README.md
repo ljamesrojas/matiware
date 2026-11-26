@@ -4,7 +4,7 @@ An interactive 3D explorer that teaches what is inside computing devices. Rotate
 
 Built for IT students learning computer hardware.
 
-**Live site: [matiware.vercel.app](https://matiware.vercel.app/)**
+**Live site: [matware3d.vercel.app](https://matware3d.vercel.app/)**
 
 ## Features
 
