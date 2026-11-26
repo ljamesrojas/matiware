@@ -17,7 +17,7 @@ export function Header() {
         <span className={styles.logo} aria-hidden="true">
           <Cpu size={18} strokeWidth={1.8} />
         </span>
-        <span className={styles.wordmark}>Hardware Explorer</span>
+        <span className={styles.wordmark}>Matware</span>
         <span className={styles.sep} aria-hidden="true" />
         <nav aria-label="Breadcrumb" className={`${styles.crumbs} mono-label`}>
           <span>Devices</span>

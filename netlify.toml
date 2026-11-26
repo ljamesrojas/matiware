@@ -1,4 +1,4 @@
-# Netlify build and caching settings for Hardware Explorer.
+# Netlify build and caching settings for Matware.
 
 [build]
   command = "npm run build"

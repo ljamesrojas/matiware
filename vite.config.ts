@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: "prompt",
       includeAssets: ["favicon.svg", "apple-touch-icon.png"],
       manifest: {
-        name: "Hardware Explorer",
-        short_name: "Hardware",
+        name: "Matware",
+        short_name: "Matware",
         description: "An interactive 3D explorer that teaches what is inside computing devices.",
         theme_color: "#FBFAF8",
         background_color: "#EEEDE9",

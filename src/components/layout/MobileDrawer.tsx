@@ -56,7 +56,7 @@ export function MobileDrawer() {
         aria-label="Parts list"
       >
         <div className={styles.head}>
-          <span className="mono-label">Hardware Explorer</span>
+          <span className="mono-label">Matware</span>
           <button
             ref={closeRef}
             type="button"
