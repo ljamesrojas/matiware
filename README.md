@@ -4,6 +4,8 @@ An interactive 3D explorer that teaches what is inside computing devices. Rotate
 
 Built for IT students learning computer hardware.
 
+**Live site: [matiware.vercel.app](https://matiware.vercel.app/)**
+
 ## Features
 
 - **Three devices:** desktop PC, laptop and smartphone, each built from simple 3D shapes.
