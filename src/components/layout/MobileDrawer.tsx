@@ -1,9 +1,10 @@
 import { useEffect, useRef } from "react";
-import { GraduationCap, X } from "lucide-react";
+import { Cpu, GraduationCap, X } from "lucide-react";
 import styles from "./MobileDrawer.module.css";
 import { SidebarContent } from "./Sidebar";
 import { LevelToggle } from "./LevelToggle";
 import { useExplorerStore } from "../../store/useExplorerStore";
+import { homeHref } from "../../router";
 
 export function MobileDrawer() {
   const open = useExplorerStore((s) => s.drawerOpen);
@@ -28,7 +29,7 @@ export function MobileDrawer() {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Tab" || !panelRef.current) return;
-      const focusable = panelRef.current.querySelectorAll<HTMLElement>("button:not([aria-disabled='true']), input");
+      const focusable = panelRef.current.querySelectorAll<HTMLElement>("a[href], button:not([aria-disabled='true']), input");
       if (!focusable.length) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
@@ -56,7 +57,13 @@ export function MobileDrawer() {
         aria-label="Parts list"
       >
         <div className={styles.head}>
-          <span className="mono-label">Matware</span>
+          {/* On phones the header has no logo, so the way back to the landing page is here. */}
+          <a href={homeHref} className={styles.home} aria-label="Matware home" onClick={() => setOpen(false)}>
+            <span className={styles.logo} aria-hidden="true">
+              <Cpu size={16} strokeWidth={1.8} />
+            </span>
+            <span className={styles.wordmark}>Matware</span>
+          </a>
           <button
             ref={closeRef}
             type="button"
