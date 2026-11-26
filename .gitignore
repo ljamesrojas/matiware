@@ -20,3 +20,8 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Private planning notes (kept locally, not published)
+CLAUDE.md
+claude-code-prompt.md
+hardware-explorer-plan.md
