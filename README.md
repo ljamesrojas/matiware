@@ -76,7 +76,7 @@ All learning text lives in `src/data/`. To fix or extend a part's description, e
 
 ## Deploy
 
-The repo includes a `netlify.toml`. On [Netlify](https://www.netlify.com/), import the repo and the build settings fill in automatically (`npm run build`, publish `dist`). Any static host works, since the app uses hash routes and relative paths.
+The repo includes a `vercel.json`. On [Vercel](https://vercel.com/), import the repo and the build settings fill in automatically (`npm run build`, output `dist`). A `netlify.toml` with the same settings is included too. Any static host works, since the app uses hash routes and relative paths.
 
 ## Author
 
