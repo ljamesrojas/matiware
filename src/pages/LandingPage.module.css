@@ -395,23 +395,34 @@
   background: var(--canvas);
 }
 
+/* Two balanced columns: profile (left) and story (right), split by a divider. */
 .aboutCard {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 28px;
-  padding: 32px;
+  display: grid;
+  grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+  align-items: center;
+  gap: 48px;
+  padding: 40px 48px;
   border: 1px solid var(--border);
   border-radius: var(--r-card);
   background: var(--surface);
+}
+
+.aboutProfile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding-right: 48px;
+  border-right: 1px solid var(--divider);
+  text-align: center;
 }
 
 .avatar {
   display: grid;
   place-items: center;
   flex: none;
-  width: 88px;
-  height: 88px;
+  width: 128px;
+  height: 128px;
   border-radius: 50%;
   overflow: hidden;
   border: 1px solid var(--border);
@@ -428,32 +439,65 @@
   object-fit: cover;
 }
 
-.aboutBody {
-  flex: 1 1 360px;
-  min-width: 0;
-}
-
 .aboutName {
   margin: 0;
-  font-size: 30px;
+  font-size: 28px; /* device-title size */
   font-weight: 500;
+  line-height: 1.15;
   letter-spacing: -0.02em;
 }
 
 .aboutRole {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
 }
 
+.aboutStory {
+  min-width: 0;
+}
+
+/* Same style as the inspector card's section headings. */
+.aboutStoryTitle {
+  margin: 0 0 12px;
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Same size as the hero lead, so the story carries the right column. */
 .aboutNote {
   max-width: 640px;
-  margin: 16px 0 0;
+  margin: 0;
   color: var(--text-body);
-  font-size: 15px;
+  font-size: 18px;
   line-height: 1.6;
 }
 
 .aboutCard .actions {
-  margin-top: 24px;
+  margin-top: 28px;
+}
+
+/* Medium widths: stack, with the photo beside the name. */
+@media (max-width: 900px) {
+  .aboutCard {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    padding: 32px;
+  }
+  .aboutProfile {
+    flex-direction: row;
+    gap: 16px;
+    padding: 0 0 28px;
+    border-right: 0;
+    border-bottom: 1px solid var(--divider);
+    text-align: left;
+  }
+  .avatar {
+    width: 88px;
+    height: 88px;
+  }
 }
 
 /* Footer */
@@ -531,5 +575,19 @@
   }
   .aboutCard {
     padding: 24px;
+  }
+  .avatar {
+    width: 72px;
+    height: 72px;
+  }
+  .aboutName {
+    font-size: 22px;
+  }
+  .aboutNote {
+    font-size: 16px;
+  }
+  .aboutCard .actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

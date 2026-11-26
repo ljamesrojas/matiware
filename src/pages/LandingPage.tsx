@@ -144,16 +144,24 @@ export function LandingPage() {
           <div className={`${styles.container} ${styles.section}`}>
             <p className={styles.eyebrow}>About the developer</p>
             <div className={styles.aboutCard}>
-              <div className={styles.avatar} aria-hidden="true">
-                {developer.photo ? (
-                  <img src={developer.photo} alt="" width={88} height={88} loading="lazy" decoding="async" />
-                ) : (
-                  developer.initials
-                )}
+              {/* Left: who */}
+              <div className={styles.aboutProfile}>
+                <div className={styles.avatar} aria-hidden="true">
+                  {developer.photo ? (
+                    <img src={developer.photo} alt="" width={128} height={128} loading="lazy" decoding="async" />
+                  ) : (
+                    developer.initials
+                  )}
+                </div>
+                <div className={styles.aboutIdentity}>
+                  <h2 className={styles.aboutName}>{developer.name}</h2>
+                  <p className={`mono-label ${styles.aboutRole}`}>{developer.role}</p>
+                </div>
               </div>
-              <div className={styles.aboutBody}>
-                <h2 className={styles.aboutName}>{developer.name}</h2>
-                <p className={`mono-label ${styles.aboutRole}`}>{developer.role}</p>
+
+              {/* Right: why, and where to find more */}
+              <div className={styles.aboutStory}>
+                <h3 className={styles.aboutStoryTitle}>{developer.noteTitle}</h3>
                 <p className={styles.aboutNote}>{developer.note}</p>
                 <div className={styles.actions}>
                   <a className={`${styles.btn} ${styles.primary}`} href={links.portfolio} {...external}>

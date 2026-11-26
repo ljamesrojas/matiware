@@ -44,5 +44,6 @@ export const developer = {
   photo: developerPhoto as string | undefined,
   name: "Lawrenze James Rojas",
   role: "BSIT student · Gordon College",
+  noteTitle: "Why I built Matware",
   note: "Hi, I'm LJ, a BSIT student and full-stack web developer from the Philippines. I built Matware because computer hardware makes more sense when you can take it apart and see how each part connects to the rest. I hope it helps fellow IT students learn by exploring, not just memorizing.",
 };
