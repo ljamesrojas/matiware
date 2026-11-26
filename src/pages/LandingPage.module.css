@@ -1,4 +1,4 @@
-/* Landing page (plan section 4b), Bench theme. */
+/* Landing page, Bench theme (tokens from src/theme.css). */
 
 .page {
   height: 100vh;
@@ -73,15 +73,19 @@
   height: 40px;
   padding: 0 14px;
   border-radius: var(--r-pill);
-  color: #3d3b36;
+  color: var(--text-2);
   font-size: 14px;
   text-decoration: none;
-  transition: background var(--dur) var(--ease-out);
+  transition:
+    background var(--dur) var(--ease-out),
+    color var(--dur) var(--ease-out);
 }
 
-.navLink:hover {
-  background: #f1f0ec;
-  color: var(--text);
+@media (hover: hover) {
+  .navLink:hover {
+    background: var(--hover);
+    color: var(--text);
+  }
 }
 
 .navCta {
@@ -112,8 +116,10 @@
   color: #fff;
 }
 
-.primary:hover {
-  background: var(--accent-ink);
+@media (hover: hover) {
+  .primary:hover {
+    background: var(--accent-ink);
+  }
 }
 
 .secondary {
@@ -122,8 +128,10 @@
   color: var(--text);
 }
 
-.secondary:hover {
-  background: var(--hover);
+@media (hover: hover) {
+  .secondary:hover {
+    background: var(--hover);
+  }
 }
 
 .actions {
@@ -141,7 +149,7 @@
   align-items: center;
   gap: 48px;
   padding-top: 72px;
-  padding-bottom: 64px;
+  padding-bottom: 112px; /* room for the preview card below the stage */
 }
 
 .heroText {
@@ -153,9 +161,9 @@
   margin: 0 0 16px;
   color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -164,7 +172,7 @@
   font-size: clamp(38px, 5vw, 56px);
   font-weight: 500;
   line-height: 1.05;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
 }
 
 .heroLead {
@@ -182,18 +190,18 @@
   height: 480px;
   padding: 24px;
   border: 1px solid var(--border);
-  border-radius: calc(var(--r) + 8px);
+  border-radius: var(--r-card);
   background: var(--canvas);
 }
 
 .previewCard {
   position: absolute;
-  right: 20px;
-  bottom: 20px;
+  right: 24px;
+  bottom: -72px;
   width: 232px;
   padding: 14px 16px;
   border: 1px solid var(--border);
-  border-radius: calc(var(--r) + 2px);
+  border-radius: var(--r-card);
   background: var(--surface);
   box-shadow: var(--shadow-inspector);
 }
@@ -205,13 +213,14 @@
 }
 
 .code {
-  padding: 3px 6px;
-  border-radius: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
   background: var(--hover);
-  color: #3d3b36;
+  color: var(--text-2);
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.04em;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
 }
 
 .cat {
@@ -256,7 +265,9 @@
   margin: 0;
   color: var(--accent-ink);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
 }
 
 .stepTitle {
@@ -310,9 +321,11 @@
     box-shadow var(--dur) var(--ease-out);
 }
 
-.deviceCard:hover {
-  border-color: var(--accent);
-  box-shadow: var(--shadow-dock);
+@media (hover: hover) {
+  .deviceCard:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-dock);
+  }
 }
 
 .deviceTop {
@@ -369,8 +382,10 @@
   font-weight: 500;
 }
 
-.deviceCard:hover .deviceLink {
-  text-decoration: underline;
+@media (hover: hover) {
+  .deviceCard:hover .deviceLink {
+    text-decoration: underline;
+  }
 }
 
 /* About the developer */
@@ -387,7 +402,7 @@
   gap: 28px;
   padding: 32px;
   border: 1px solid var(--border);
-  border-radius: calc(var(--r) + 6px);
+  border-radius: var(--r-card);
   background: var(--surface);
 }
 
@@ -424,8 +439,8 @@
   max-width: 640px;
   margin: 16px 0 0;
   color: var(--text-body);
-  font-size: 16px;
-  line-height: 1.65;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .aboutCard .actions {
@@ -459,8 +474,10 @@
   color: var(--text-2);
 }
 
-.footerLinks a:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .footerLinks a:hover {
+    color: var(--text);
+  }
 }
 
 /* Small screens */
@@ -470,8 +487,21 @@
     padding-left: 16px;
     padding-right: 16px;
   }
+  .headerInner {
+    min-height: 64px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .desktopOnly {
+    display: none;
+  }
+  .navLink {
+    height: 44px;
+    padding: 0 12px;
+  }
   .navCta {
     margin-left: 0;
+    padding: 0 16px;
   }
   .hero {
     gap: 32px;
@@ -479,8 +509,9 @@
     padding-bottom: 40px;
   }
   .stage {
-    height: 340px;
-    padding: 12px;
+    height: auto;
+    aspect-ratio: 720 / 560;
+    padding: 8px;
   }
   .previewCard {
     display: none;

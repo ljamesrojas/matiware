@@ -1,0 +1,6 @@
+/* At phone width the drawing is about half size, so the 11px labels become unreadable. */
+@media (max-width: 767px) {
+  .label {
+    display: none;
+  }
+}

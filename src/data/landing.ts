@@ -1,4 +1,4 @@
-/** Copy and links for the landing page (plan section 4b). */
+/** Copy and links for the landing page. */
 
 export const links = {
   portfolio: "https://ljrojas.vercel.app/",

@@ -1,3 +1,4 @@
+import type { MouseEvent } from "react";
 import { ArrowRight, ArrowUpRight, Cpu, Github, Laptop, Monitor, Smartphone, type LucideIcon } from "lucide-react";
 import styles from "./LandingPage.module.css";
 import { HeroIllustration } from "../components/landing/HeroIllustration";
@@ -16,9 +17,12 @@ const deviceIcons: Record<DeviceIcon, LucideIcon> = {
 
 const external = { target: "_blank", rel: "noopener noreferrer" } as const;
 
+/** Screen-reader note for links that open in a new tab. */
+const newTab = <span className="sr-only"> (opens in a new tab)</span>;
+
 /** Scroll to a section without changing the URL hash (the hash is used for routing). */
 function scrollTo(id: string) {
-  return (e: React.MouseEvent) => {
+  return (e: MouseEvent) => {
     e.preventDefault();
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     document.getElementById(id)?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
@@ -30,7 +34,7 @@ export function LandingPage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
+      <header id="top" className={styles.header}>
         <div className={`${styles.container} ${styles.headerInner}`}>
           <a href={homeHref} className={styles.brand} onClick={scrollTo("top")}>
             <span className={styles.logo} aria-hidden="true">
@@ -42,12 +46,14 @@ export function LandingPage() {
             <a className={styles.navLink} href="#devices" onClick={scrollTo("devices")}>
               Devices
             </a>
-            <a className={styles.navLink} href={links.portfolio} {...external}>
+            <a className={`${styles.navLink} ${styles.desktopOnly}`} href={links.portfolio} {...external}>
               About the developer
+              {newTab}
             </a>
-            <a className={styles.navLink} href={links.github} {...external}>
+            <a className={`${styles.navLink} ${styles.desktopOnly}`} href={links.github} {...external}>
               <Github size={16} strokeWidth={1.8} aria-hidden="true" />
               GitHub
+              {newTab}
             </a>
             <a className={`${styles.btn} ${styles.primary} ${styles.navCta}`} href={exploreHref()}>
               Open explorer
@@ -57,7 +63,7 @@ export function LandingPage() {
       </header>
 
       <main>
-        <section id="top" className={`${styles.container} ${styles.hero}`}>
+        <section className={`${styles.container} ${styles.hero}`}>
           <div className={styles.heroText}>
             <p className={styles.eyebrow}>{hero.eyebrow}</p>
             <h1 className={styles.heroTitle}>{hero.title}</h1>
@@ -149,10 +155,12 @@ export function LandingPage() {
                   <a className={`${styles.btn} ${styles.primary}`} href={links.portfolio} {...external}>
                     View portfolio
                     <ArrowUpRight size={16} strokeWidth={2} aria-hidden="true" />
+                    {newTab}
                   </a>
                   <a className={`${styles.btn} ${styles.secondary}`} href={links.github} {...external}>
                     <Github size={16} strokeWidth={1.8} aria-hidden="true" />
                     View Matware on GitHub
+                    {newTab}
                   </a>
                 </div>
               </div>
@@ -167,9 +175,11 @@ export function LandingPage() {
           <div className={styles.footerLinks}>
             <a href={links.portfolio} {...external}>
               About the developer
+              {newTab}
             </a>
             <a href={links.github} {...external}>
               GitHub
+              {newTab}
             </a>
           </div>
         </div>
